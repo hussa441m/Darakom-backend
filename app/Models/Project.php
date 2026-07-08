@@ -37,13 +37,11 @@ class Project extends Model
     function steps(){
         return $this->hasMany(Step::class);
     }
-
 /**
  * جميع التقييمات الخاصة بالمشروع
  */
- function ratings()
-{
-    return $this->hasMany(Rating::class);
-}
+    public function ratings() {
+        return $this->hasMany(Rating::class);
+    }
 
 }

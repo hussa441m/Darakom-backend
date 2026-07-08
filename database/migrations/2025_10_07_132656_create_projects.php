@@ -18,17 +18,21 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->string('title', 100);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
+
             $table->float('duration')->comment('in month');
             $table->float('area')->comment('in km');
+
             $table->string('location_details');
             $table->text('description');
+
             $table->string('building_no',15);
-            
+            $table->enum('request_type', ['tender', 'direct'])->default('tender');
             $table->integer('budget')->nullable();
-            
-            $table->enum('status' , ['new' , 'active' , 'completed'])->default('new');
+            //إذا كان المدير سيقبل أو يرفض المشاريع. pending
+            $table->enum('status', ['pending', 'new', 'active', 'completed'])->default('pending');
             
             $table->string('comment' , 1000)->nullable();
             $table->enum('rate' , ['1', '2' , '3' ,'4' ,'5'])->nullable();

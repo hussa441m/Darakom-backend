@@ -25,12 +25,25 @@ class User extends Authenticatable
         'type',
         'status',
     ];
+    
 
 
       
     public function profile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Profile::class);
+    }
+    // التقييمات التي قام المستخدم بإرسالها
+    public function ratings()
+    {
+    return $this->hasMany(Rating::class);
+    }
+
+
+    // التقييمات التي حصل عليها المستخدم
+    public function receivedRatings()
+    {
+    return $this->hasMany(Rating::class, 'to_user_id');
     }
 
     /**

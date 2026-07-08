@@ -22,7 +22,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             $table->string('email', 100)->unique();
-            $table->binary('password', 60);
+            // $table->binary('password', 60);
+            $table->string('password');
             $table->enum('type', ['admin', 'client', 'customer'])->default('customer');
             $table->enum('status' , ['pending','active' , 'closed' , 'locked']);
             $table->timestamps();
@@ -50,6 +51,7 @@ return new class extends Migration
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
             $table->date('experience_start');
+             $table->string('work_area', 100);
             $table->string('admin_comment', 1000)->nullable();
             $table->foreignId('user_id')->unique()->constrained();
             $table->foreignId('role_id')->constrained();
