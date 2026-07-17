@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->integer('cost');
-            $table->integer('duration');
+            $table->decimal('cost', 15, 2);
+            $table->unsignedSmallInteger('duration');
+            $table->enum('duration_unit', ['day','month','year'])->default('day');
+             $table->text('provider_comment')->nullable();  //'نبذة عن العمل يكتبها المقاول عند تقديم العرض'
             $table->text('details');
-            $table->boolean('isSelected')->default(false);
-
-            $table->foreignId('project_id')->constrained();                        
-            $table->foreignId('offered_by')->constrained('profiles');                        
+           
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();                       
+            $table->foreignId('offered_by')->constrained('profiles')->cascadeOnDelete();  
+             
+            $table->enum('status', ['pending', 'accepted', 'rejected', 'canceled'])->default('pending');
+            $table->string('reject_reason', 500)->nullable();   //سبب الرفض                  
 
             $table->timestamps();
         });

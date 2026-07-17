@@ -20,12 +20,18 @@ return new class extends Migration
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50);
+           $table->string('first_name',50);
+           $table->string('last_name',50);  
+
             $table->string('email', 100)->unique();
-            // $table->binary('password', 60);
+            $table->string('address', 255)->nullable();       
             $table->string('password');
-            $table->enum('type', ['admin', 'client', 'customer'])->default('customer');
-            $table->enum('status' , ['pending','active' , 'closed' , 'locked']);
+            $table->enum('type', ['admin', 'client', 'provider'])->default('client');
+            $table->enum('status', ['pending', 'active', 'closed', 'locked'])->default('pending');
+    
+            $table->string('avatar')->nullable();
+            $table->string('fcm_token')->nullable(); //'رمز الجهاز لإرسال الإشعارات اللحظية
+            $table->boolean('is_notifications_enabled')->default(true) ; //'حالة تفعيل الإشعارات من واجهة الإعدادات'
             $table->timestamps();
         });
 
@@ -48,13 +54,24 @@ return new class extends Migration
             $table->foreignId('contact_type_id')->constrained();
             $table->timestamps();
         }); 
+        
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
+
             $table->date('experience_start');
-             $table->string('work_area', 100);
+            $table->integer('experience_years')->default(0);
+
+            $table->string('work_area', 100);
+            $table->text('bio')->nullable();
+
+            $table->string('syndicate_number', 50)->nullable()->unique();
+            $table->string('logo')->nullable();
+
             $table->string('admin_comment', 1000)->nullable();
+
             $table->foreignId('user_id')->unique()->constrained();
             $table->foreignId('role_id')->constrained();
+
             $table->timestamps();
         });
 

@@ -17,7 +17,11 @@ return new class extends Migration
             $table->id();
             $table->string('title' , 100);            
             $table->string('description' , 1000)->nullable();                    
-            $table->foreignId('project_id')->constrained();                                    
+                                           
+            $table->date('date')->nullable();//تاريخ المرحلة
+            $table->unsignedTinyInteger('progress_percent')->default(0); // نسبة إنجاز الخطوة (0-100)
+            $table->enum('status', ['not_started', 'in_progress', 'completed'])->default('not_started');
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();    
             $table->timestamps();
         });
 

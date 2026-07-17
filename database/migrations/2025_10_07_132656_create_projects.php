@@ -18,30 +18,62 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            
+            // 1. كود فريد للمشروع يعرض في واجهة نجاح العملية (Success Screen)
+            $table->string('project_code', 20)->unique()->nullable(); 
+            // نوع الحرفي المطلوب في حال كان المشروع تشطيب
+            $table->enum('craftsman_type', [
+               'electricity',   // كهرباء
+               'plumbing',      // سباكة
+               'tiling',        // بلاط
+                'ac',            // تكييف
+               'gypsum',        // جبسنبورد
+               'solar_energy',  // طاقة شمسية
+               'painting'       // دهان
+            ])->nullable();
+
+              // نوع المناقصة (مستعجل أو عادي)
+            $table->enum('tender_type', ['urgent', 'normal'])->default('normal');
+            
             $table->string('title', 100);
+            $table->enum('work_type', ['construction', 'finishing'])->comment('نوع العمل: إنشاء أو تشطيب');
+            
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
+            // $table->unsignedSmallInteger('duration');
+            
+            $table->unsignedInteger('area'); //'in square meters (m2)'
 
-            $table->float('duration')->comment('in month');
-            $table->float('area')->comment('in km');
+            $table->string('location_details'); // يستقبل تفاصيل (حي، شارع)
+            $table->string('building_no', 15);//'رقم قطعة الأرض أو البناء'
+            
+            $table->text('description'); 
+            $table->enum('visibility', ['public', 'private'])->default('public');//طريقة ظهور المشروع
+            $table->foreignId('provider_profile_id')->nullable()->constrained('profiles')->nullOnDelete();
+            $table->unsignedSmallInteger('tender_duration')->default(3);
 
-            $table->string('location_details');
-            $table->text('description');
-
-            $table->string('building_no',15);
-            $table->enum('request_type', ['tender', 'direct'])->default('tender');
-            $table->integer('budget')->nullable();
-            //إذا كان المدير سيقبل أو يرفض المشاريع. pending
+            $table->enum('tender_duration_unit', [
+              'hour',
+              'day'
+            ])->default('day');
+            $table->decimal('budget', 15, 2)->nullable(); 
+            
+            // إذا كان المدير سيقبل أو يرفض المشاريع
             $table->enum('status', ['pending', 'new', 'active', 'completed'])->default('pending');
+            $table->enum('execution_status', [
+                'not_started',
+                'in_progress',
+                'paused',
+                'finished'
+            ])->default('not_started');
+
             
             $table->string('comment' , 1000)->nullable();
-            $table->enum('rate' , ['1', '2' , '3' ,'4' ,'5'])->nullable();
-            
-            $table->foreignId('province_id')->constrained();                                    
-            $table->foreignId('project_type_id')->constrained();                                    
-            $table->foreignId('customer_id')->constrained('users');                                    
-            $table->foreignId('performed_by')->nullable()->constrained('profiles');                        
 
+            $table->foreignId('province_id')->constrained();                                  
+            $table->foreignId('project_type_id')->constrained();                                  
+            $table->foreignId('client_id')->constrained('users');                                    
+            $table->foreignId('performed_by')->nullable()->constrained('profiles')->nullOnDelete(); 
             $table->timestamps();
         });
 
