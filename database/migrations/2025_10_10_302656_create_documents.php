@@ -19,10 +19,11 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->string('path' );
-            $table->string('description' );
-            $table->foreignId('documentable_id');                                                
-            $table->string('documentable_type');                                                
-            $table->foreignId('document_type_id')->constrained();                                                
+            $table->string('description')->nullable();
+
+            $table->foreignId('documentable_id');                                                                    
+            $table->foreignId('document_type_id')->constrained();    
+            $table->string('documentable_type');                                            
             $table->timestamps();
         });
     }

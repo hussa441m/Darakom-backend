@@ -14,10 +14,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('rate');
             $table->string('comment',1000)->nullable();
 
-            $table->foreignId('project_id')->constrained();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('to_user_id')->constrained('users');
-
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('to_user_id')->constrained('users')->cascadeOnDelete();
+            $table->unique(['project_id','user_id','to_user_id']);
             $table->timestamps();
         });
     }
