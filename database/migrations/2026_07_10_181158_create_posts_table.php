@@ -15,11 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->text('description');
-
-            $table->foreignId('profile_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
-
+            $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -13,13 +13,8 @@ return new class extends Migration
     {
         Schema::create('post_images', function (Blueprint $table) {
             $table->id();
-
             $table->string('image');
-
-            $table->foreignId('post_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
-
+            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
