@@ -13,8 +13,9 @@ class ProjectType extends Model
     function projects(){
         return $this->hasMany(Project::class);
     }
-        function roles(){
-        return $this->belongsToMany(Role::class);
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class,'project_type_role','project_type_id','role_id');
     }
 
 }

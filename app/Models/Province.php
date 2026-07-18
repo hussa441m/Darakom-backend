@@ -6,5 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Province extends Model
 {
-    //
+    protected $fillable = ['name'];
+    public $timestamps = false;
+
+    public function projects()
+    {
+       return $this->hasMany(Project::class);
+    }
 }

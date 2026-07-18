@@ -18,32 +18,65 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'type',
-        'status',
+     protected $fillable = [
+          'first_name',
+          'last_name',
+          'email',
+          'address',
+          'password',
+          'type',        // admin, client, provider
+          'status',      // pending, active, closed, locked
+          'avatar',
+          'fcm_token',
+          'is_notifications_enabled',
     ];
-    
+   
 
+    /**
+     * Accessor لجلب الاسم الكامل للمستخدم مباشرة
+     */
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
 
-      
     public function profile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Profile::class);
     }
-    // التقييمات التي قام المستخدم بإرسالها
+
     public function ratings()
     {
-    return $this->hasMany(Rating::class);
+        return $this->hasMany(Rating::class);
+    }
+
+    public function contacts()
+    {
+        return $this->hasMany(Contact::class);
+    }
+    public function projects()
+    {
+       return $this->hasMany(Project::class, 'client_id');
+    }
+
+    public function favorites()
+    {
+       return $this->hasMany(Favorite::class);
+    }
+    public function complaints()
+    {
+       return $this->hasMany(Complaint::class);
+    }
+     public function projectReports()
+    {
+       return $this->hasMany(ProjectReport::class);
     }
 
 
     // التقييمات التي حصل عليها المستخدم
     public function receivedRatings()
     {
-    return $this->hasMany(Rating::class, 'to_user_id');
+        return $this->hasMany(Rating::class, 'to_user_id');
     }
 
     /**
@@ -64,7 +97,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'is_notifications_enabled' => 'boolean',
             'password' => 'hashed',
         ];
     }
