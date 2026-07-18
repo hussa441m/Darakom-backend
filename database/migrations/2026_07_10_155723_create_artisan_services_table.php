@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('artisan_services', function (Blueprint $table) {
 
             $table->id();
-            $table->foreignId('profile_id')->constrained();
-            $table->foreignId('service_category_id')->constrained();
+            $table->foreignId('profile_id')->constrained()->cascadeOnDelete();;
+            $table->foreignId('service_category_id')->constrained()->cascadeOnDelete();;
            $table->unique(['profile_id','service_category_id']);
             $table->timestamps();
             

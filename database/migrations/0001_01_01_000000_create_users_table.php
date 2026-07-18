@@ -38,7 +38,7 @@ return new class extends Migration
         Schema::create('account_log', function (Blueprint $table) {
             $table->id();
             $table->json('details'); //reject cause
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();;
             $table->timestamps();
         });
 
@@ -77,9 +77,9 @@ return new class extends Migration
 
         Schema::create('qualifications', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name', 100);
             $table->string('image');
-            $table->foreignId('profile_id')->constrained();
+            $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
 

@@ -11,16 +11,14 @@ return new class extends Migration
         Schema::create('project_reports', function (Blueprint $table) {
 
             $table->id();
-
             $table->text('description');
+            $table->unsignedTinyInteger('reported_progress')->nullable();//نسبة الإنجاز
+            $table->enum('status',['pending','approved','rejected'])->default('pending');
 
-            $table->string('image')->nullable();
-
-            $table->enum('status',['pending','approved']);
-
-            $table->foreignId('project_id')->constrained();
-
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('step_id')->nullable()->constrained('steps')->nullOnDelete();;
+           
 
             $table->timestamps();
         });

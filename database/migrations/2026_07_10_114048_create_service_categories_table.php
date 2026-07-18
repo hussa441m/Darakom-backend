@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('name',50)->unique();
+            $table->string('display_name',50);
 
         });
     }
