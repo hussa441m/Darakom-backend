@@ -6,29 +6,67 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
-    protected $fillable = [  'experience_start', 'admin_comment','user_id','role_id'];
+    protected $fillable = [
+        'experience_start',
+        'work_area',
+        'bio',
+        'experience_years',
+        'admin_comment',
+        'syndicate_number',
+        'logo',
+        'user_id',
+        'role_id',
+    ];
 
-    function user(){
+
+    // البروفايل تابع لمستخدم
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-    function role(){
+
+
+    // البروفايل له دور (مقاول، مهندس، حرفي...)
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
 
-    function documents(){
-        return $this->morphMany(Document::class , 'documentable');
+
+    // الملفات المرتبطة بالبروفايل
+    public function documents()
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
-    function projectTypes(){
+
+    // المشاريع التي ينفذها هذا المزود
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'performed_by');
+    }
+
+
+    // الخدمات التي يقدمها الحرفي
+    public function serviceCategories()
+    {
         return $this->belongsToMany(
-            ProjectType::class,
-            'project_type_role',
-            'role_id', // pivot column that references the profile->role_id
-            'project_type_id',
-            'role_id', // local key on this model that stores the role id
-            'id' // related model primary key
+            ServiceCategory::class,
+            'artisan_services',
+            'profile_id',
+            'service_category_id'
         );
     }
-    function projects(){
-        return $this->hasMany(Project::class ,'performed_by');
+    public function offers()
+    {
+        return $this->hasMany(Offer::class, 'offered_by');
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+    public function qualifications()
+{
+    return $this->hasMany(Qualification::class);
+}
 }
