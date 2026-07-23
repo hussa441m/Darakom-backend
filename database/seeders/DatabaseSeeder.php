@@ -13,12 +13,12 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
-    {
-        
-        $this->call(ProvinceSeeder::class);
-        $this->call(ProjectAndUserAndOfferSeeder::class);
-        $this->call(DocumentSeeder::class);
-        
-    }
+  public function run(): void
+{
+    $this->call(ProvinceSeeder::class);
+    $this->call(ProjectAndUserAndOfferSeeder::class);
+    $this->call(DocumentSeeder::class);
+    $this->call(ServiceCategorySeeder::class);
+    $this->call(ArtisanServiceSeeder::class);
+}
 }
