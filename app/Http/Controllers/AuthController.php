@@ -7,114 +7,192 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
-    function register(Request $request)
+    public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:50',
-            'email' => 'required|email|max:175|unique:users',
+            'first_name' => 'required|string|max:50',
+            'last_name'  => 'required|string|max:50',
+            'email' => 'required|email|max:100|unique:users',
             'password' => 'required|confirmed|min:6',
-            'type' => 'required|in:client,customer',
-            'experience_start' => 'required_if:type,client|date',
-            'role_id' => 'required_if:type,client|exists:roles,id',
+            'type' => 'required|in:client,provider',
+            'experience_start' => 'required_if:type,provider|date',
+            'role_id' => 'required_if:type,provider|exists:roles,id',
+            'work_area' => 'required_if:type,provider|string|max:100',
             'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,png,jpeg,png,webp|max:50000',
+            'documents.*.file' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
             'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'required|max:255',
+            'documents.*.description' => 'nullable|string|max:255',
         ]);
 
-        $validated['status'] = $request->type == 'client' ? 'pending' : 'active';
+        $validated['status'] = $request->type == 'provider' ? 'pending' : 'active';
 
-        $user = User::create(
-            $validated
-        );
-        $type = $user->type;
-        $name = $user->name;
-        $token = $user->createToken("mobile")->plainTextToken;
+        $user = User::create([
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'type' => $validated['type'],
+            'status' => $validated['status'],
+        ]);
 
-        if ($type == 'client') {
+        if ($user->type === 'provider') {
             $profile = $user->profile()->create([
                 'experience_start' => $validated['experience_start'],
+                'work_area' => $validated['work_area'],
                 'role_id' => $validated['role_id'],
             ]);
-            if ($request->has('documents')) {
-                foreach ($request->documents as $document) {
 
-                    $docName = $document['file']->store('projects', 'public');
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $index => $documentData) {
+                    if (isset($documentData['file']) && $documentData['file']->isValid()) {
+                        $path = $documentData['file']->store('documents', 'public');
 
-                    $profile->documents()->create([
-                        'path' => $docName,
-                        'description' => $document['description'],
-                        'document_type_id' => $document['type'],
-                    ]);
+                        $type = $request->input("documents.{$index}.type");
+                        $description = $request->input("documents.{$index}.description");
+
+                        $profile->documents()->create([
+                            'path' => $path,
+                            'description' => $description,
+                            'document_type_id' => $type,
+                        ]);
+                    }
                 }
             }
         }
-        return apiSuccess('تم إنشاء الحساب بنجاح ', compact('type', 'name', 'token'));
-    }
 
-    function getProfile(Request $request)
-    {
-        $user = $request->user();
-        $user->experience_start = $user->profile->experience_start ?? null;
-        $user->experience_start = $user->profile->experience_start ?? null;
-        $user->role_id = $user->profile->role?->id ?? null;
-        $user->role = $user->profile->role?->name ?? null;
-        return apiSuccess('تم جلب بيانات الحساب بنجاح ', $user);
-    }
-    function updateProfile(Request $request)
-    {
-        $user = $request->user();
-        $validated = $request->validate([
-            'name' => 'required|max:50',
-            'email' => 'required|email|max:175|unique:users,email,' . $user->id,
-            'experience_start' => 'required_if:type,client|date',
-            'role_id' => 'required_if:type,client|exists:roles,id',
-        ]);
+        $token = $user->createToken('mobile')->plainTextToken;
 
-        $user->update(
-            $validated
+        return apiSuccess(
+            'تم إنشاء الحساب بنجاح',
+            [
+                'type' => $user->type,
+                'name' => $user->full_name,
+                'token' => $token,
+            ]
         );
-
-        if ($user->type == 'client') {
-            $profile = $user->profile()->update([
-                'experience_start' => $validated['experience_start'],
-                'role_id' => $validated['role_id'],
-            ]);
-        }
-        return apiSuccess('تم تعديل الحساب بنجاح ', compact('user'));
     }
 
-    function login(Request $request)
-    {
+       public function login(Request $request)
+       {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if ($validator->fails())
-            return apiError("invalid inputs", $validator->messages(),  Response::HTTP_UNPROCESSABLE_ENTITY);
-
-        $email = $request->email;
-        $password = $request->password;
-        $user = User::where('email', $email)->first();
-
-        if ($user && Hash::check($password, $user->password)) {
-            $type = $user->type;
-
-            $name =  $user->name;
-            $token = $user->createToken("web api")->plainTextToken;
-            return apiSuccess("Account login successfuly", compact('type', 'name', 'token'), Response::HTTP_CREATED);
+        if ($validator->fails()) {
+            return apiError(
+                "بيانات الدخول غير صحيحة",
+                $validator->errors(),
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
-        return apiError("اسم المستخدم أو كلمة المرور غير صحيحة");
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return apiError(
+                "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+            );
+        }
+
+        if ($user->status === 'closed' || $user->status === 'locked') {
+            return apiError(
+                "الحساب غير مفعل"
+            );
+        }
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return apiSuccess("تم تسجيل الدخول بنجاح", [
+            'id' => $user->id,
+            'name' => $user->full_name,
+            'email' => $user->email,
+            'type' => $user->type,
+            'status' => $user->status,
+            'token' => $token
+        ]);
     }
 
-    function logout(Request $request)
+
+
+      public function getProfile(Request $request)
+     {
+       $user = $request->user()->load([
+       'profile.role',
+       'profile.documents',
+       'profile.qualifications',
+     ]);
+
+    return apiSuccess(
+        'تم جلب بيانات الحساب بنجاح',
+        new UserResource($user)
+    );
+    } 
+      public function updateProfile(Request $request)
     {
-        $user = $request->user();
-        $user->currentAccessToken()->delete();
-        return apiSuccess("logout ok");
+    $user = $request->user();
+
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:50',
+        'last_name'  => 'required|string|max:50',
+        'email'      => 'required|email|max:100|unique:users,email,' . $user->id,
+        'address'    => 'nullable|string|max:255',
+
+        'experience_start' => $user->type === 'provider'
+        ? 'required|date'
+        : 'nullable',
+
+        'role_id' => $user->type === 'provider'
+        ? 'required|exists:roles,id'
+        : 'nullable',
+
+        'work_area' => $user->type === 'provider'
+        ? 'required|string|max:100'
+        : 'nullable|string|max:100',
+        'bio'              => 'nullable|string',
+        'syndicate_number' => 'nullable|string|max:50',
+    ]);
+
+    $user->update([
+        'first_name' => $validated['first_name'],
+        'last_name'  => $validated['last_name'],
+        'email'      => $validated['email'],
+        'address'    => $validated['address'] ?? $user->address,
+    ]);
+
+    if ($user->type === 'provider' && $user->profile) {
+
+        $user->profile->update([
+            'experience_start' => $validated['experience_start'],
+            'role_id'          => $validated['role_id'],
+            'work_area'        => $validated['work_area'],
+            'bio'              => $validated['bio'] ?? $user->profile->bio,
+            'syndicate_number' => $validated['syndicate_number'] ?? $user->profile->syndicate_number,
+        ]);
     }
+
+    $user->load([
+        'profile.role',
+        'profile.documents',
+        'profile.qualifications',
+    ]);
+
+    return apiSuccess(
+        'تم تعديل الحساب بنجاح',
+        new UserResource($user)
+    );
 }
+
+
+    public function logout(Request $request)
+{
+    $request->user()->currentAccessToken()->delete();
+
+    return apiSuccess('تم تسجيل الخروج بنجاح');
+}
+}
+    

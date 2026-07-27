@@ -2,110 +2,259 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Offer;
 use App\Models\Project;
-use App\Notifications\NewOffer;
+use App\Models\Offer;
+use App\Models\Rating;
+use App\Models\Complaint;
+use App\Notifications\AcceptProvider;
+use App\Notifications\RejectOffer;
 use Illuminate\Http\Request;
+
 
 class ClientController extends Controller
 {
 
-    function getTotals(Request $request)
+    public function projects()
     {
-        $profile = $request->user()->profile;
+        $projects = Project::where(
+            'client_id',
+            request()->user()->id
+        )
+        ->with([
+            'offers',
+            'performer.user',
+            'province',
+            'projectType'
+        ])
+        ->get();
 
-
-        $activeProject = Project::where('performed_by', $profile->id)->where('status', 'active')->count();
-        $completedProject = Project::where('performed_by', $profile->id)->where('status', 'completed')->count();
-        $rate = $profile->projects?->avg('rate');
-        return apiSuccess("إحصائيات عن حسابك", compact('activeProject', 'completedProject', 'rate'));
-    }
-    function getNewProjects(Request $request)
-    {
-        $projectTypes = $request->user()->profile->projectTypes->modelKeys();
-        $projects =  Project::with('projectType', 'province')->where('status', 'new')->whereIn('project_type_id', $projectTypes)->get();
-        return apiSuccess("المشاريع الجديدة" . $request->user()->profile->id, $projects);
-    }
-
-    function getProjects(Request $request, $status)
-    {
-        $profile = $request->user()->profile;
-        $projects =  Project::where('performed_by', $profile->id)->where('status', $status)->get();
-        return apiSuccess("المشاريع التي حالتها $status", $projects);
-    }
-    function isActive(Request $request)
-    {
-        $user = $request->user();
-        return apiSuccess("حالة المستخدم", ['is_active' => $user->status == 'active']);
+        return apiSuccess("مشاريع العميل",$projects);
     }
 
-    function addOffer(Request $request, Project $project)
-    {
-        $user = $request->user();
-        if ($user->status != 'active')
-            return apiError("لا يمكنك إضافة عرض في الوقت الحالي، يجب أن يكون حسابك مفعلا");
 
-        $validated =  $request->validate([
-            'cost' => 'required|integer|min:0',
-            'duration' => 'required|integer|min:1',
-            'details' => 'required',
-            'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,png,jpeg,png,webp|max:50000',
-            'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'required|max:255',
+
+    public function show(Project $project)
+    {
+        $this->authorize('update', $project);
+
+
+        $project->load([
+            'offers.provider.user',
+            'performer.user',
+            'documents',
+            'reports'
         ]);
-        $validated['project_id'] = $project->id;
-        $validated['offered_by'] = $user->profile->id;
 
-        $offer = Offer::create($validated);
-        if ($request->has('documents')) {
-            foreach ($request->documents as $document) {
 
-                $docName = $document['file']->store('projects', 'public');
-
-                $offer->documents()->create([
-                    'path' => $docName,
-                    'description' => $document['description'],
-                    'document_type_id' => $document['type'],
-                ]);
-            }
-        }
-        $project->customer->notify(new NewOffer($user->name));
-
-        return apiSuccess("تم إضافة عرضك", $offer);
+        return apiSuccess("تفاصيل المشروع",$project);
     }
 
-    function addStep(Request $request, Project $project)
+
+    public function getOffers(Project $project)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:100', 
-            'description' => 'nullable|string|max:1000', 
-            'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,png,jpeg,png,webp|max:50000',
-            'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'required|max:255',
-        ]);        
-    $validated['project_id'] = $project->id;
-        $step = $project->steps()->create($validated);
-        if ($request->has('documents')) {
-            foreach ($request->documents as $document) {
+        $this->authorize('update', $project);
 
-                $docName = $document['file']->store('projects', 'public');
 
-                $step->documents()->create([
-                    'path' => $docName,
-                    'description' => $document['description'],
-                    'document_type_id' => $document['type'],
-                ]);
-            }
+        $offers = $project->offers()
+            ->with([
+                'provider.user',
+                'documents'
+            ])
+            ->get();
+
+
+        return apiSuccess("عروض المشروع",$offers);
+    }
+
+
+
+    public function acceptOffer(Project $project, Offer $offer)
+    {
+        $this->authorize('update', $project);
+
+
+        if ($offer->project_id != $project->id) {
+            return apiError("العرض لا يتبع لهذا المشروع");
         }
-        return apiSuccess("تم إضافة الخطوة بنجاح", $step);
+
+
+        $offer->update([
+            'status' => 'accepted'
+        ]);
+
+
+        // رفض باقي العروض
+        $project->offers()
+            ->where('id', '!=', $offer->id)
+            ->update([
+                'status' => 'rejected'
+            ]);
+
+
+
+        $project->update([
+          'performed_by' => $offer->offered_by,
+          'status' => 'active',
+          'execution_status' => 'in_progress'
+       ]);
+
+
+        $offer->provider->user
+         ->notify(
+          new AcceptProvider(
+            $project->id,
+            $offer->id
+          )
+       );
+
+
+        return apiSuccess("تم قبول العرض" );
     }
 
-    function endProject(Project $project){
-        $project->status = 'completed';
-        $project->save();
-        return apiSuccess("تم إنهاء المشروع بنجاح");;   
+
+   
+    public function rejectOffer(Project $project, Offer $offer)
+{
+    $this->authorize('update', $project);
+
+
+    if ($offer->project_id != $project->id) {
+        return apiError("العرض لا يتبع لهذا المشروع");
     }
-    
+
+      if ($offer->status == 'accepted') {
+        return apiError("لا يمكن رفض عرض تم قبوله");
+    }
+
+
+    $offer->update([
+        'status' => 'rejected'
+    ]);
+
+
+    return apiSuccess( "تم رفض العرض");
+}
+
+
+
+    public function rate(Project $project, Request $request)
+   {
+      $this->authorize('update', $project);
+
+
+     if (!$project->performed_by) {
+
+        return apiError(
+            "لا يمكن تقييم مشروع لم يبدأ بعد"
+        );
+    }
+
+
+    $request->validate([
+        'rate' => 'required|integer|between:1,5',
+        'comment' => 'nullable|string|max:1000'
+    ]);
+
+
+    $providerUserId = $project->performer?->user_id;
+
+
+    if (!$providerUserId) {
+
+        return apiError(
+            "لم يتم العثور على مزود الخدمة"
+        );
+    }
+
+
+    $exists = Rating::where([
+        'project_id' => $project->id,
+        'user_id' => request()->user()->id,
+        'to_user_id' => $providerUserId
+    ])->exists();
+
+
+    if ($exists) {
+
+        return apiError("تم تقييم هذا المزود مسبقاً");
+    }
+
+
+
+    Rating::create([
+
+        'project_id' => $project->id,
+
+        'user_id' => request()->user()->id,
+
+        'to_user_id' => $providerUserId,
+
+        'rate' => $request->rate,
+
+        'comment' => $request->comment
+
+    ]);
+
+
+    return apiSuccess("تم إضافة التقييم بنجاح" );
+   }
+
+
+
+
+    public function complaints()
+    {
+
+        $complaints = Complaint::where(
+            'user_id',
+            request()->user()->id
+        )
+        ->with('project')
+        ->get();
+
+
+
+        return apiSuccess("شكاوي العميل",$complaints);
+    }
+
+
+
+     public function storeComplaint(Request $request)
+     {
+
+        $request->validate([
+
+            'text' => 'required|string',
+
+            'project_id' => 'required|exists:projects,id'
+
+        ]);
+
+
+
+        $project = Project::findOrFail(
+        $request->project_id
+        );
+
+        if ($project->client_id != request()->user()->id) {
+
+            return apiError("لا يمكنك إنشاء شكوى لهذا المشروع");
+
+        }
+
+
+
+        $complaint = Complaint::create([
+
+            'text' => $request->text,
+
+            'project_id' => $project->id,
+
+            'user_id' => request()->user()->id
+
+        ]);
+
+        return apiSuccess("تم إرسال الشكوى",$complaint);
+    }
+
 }
