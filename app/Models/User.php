@@ -29,6 +29,7 @@ class User extends Authenticatable
           'avatar',
           'fcm_token',
           'is_notifications_enabled',
+           'province_id',
     ];
    
 
@@ -63,13 +64,24 @@ class User extends Authenticatable
     {
        return $this->hasMany(Favorite::class);
     }
+   
     public function complaints()
     {
        return $this->hasMany(Complaint::class);
     }
+
+
+    public function complaintsAgainstMe()
+    {
+      return $this->hasMany(Complaint::class,'against_user_id');
+    }
      public function projectReports()
     {
        return $this->hasMany(ProjectReport::class);
+    }
+    public function province()
+    { 
+       return $this->belongsTo(Province::class);
     }
 
 
@@ -77,6 +89,11 @@ class User extends Authenticatable
     public function receivedRatings()
     {
         return $this->hasMany(Rating::class, 'to_user_id');
+    }
+    // التقييمات التي كتبها
+    public function givenRatings()
+    {
+        return $this->hasMany(Rating::class,'user_id');
     }
 
     /**
