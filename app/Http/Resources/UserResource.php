@@ -24,7 +24,8 @@ class UserResource extends JsonResource
             'status' => $this->status,
 
             'avatar' => $this->avatar,
-
+            'province_id' => $this->province_id,
+            'province' => $this->province?->name, 
 
             'profile' => $this->whenLoaded('profile', function () {
 
@@ -39,12 +40,8 @@ class UserResource extends JsonResource
                     'bio' => $this->profile->bio,
 
                     'experience' => $this->profile->experience_start
-                        ? round(
-                            Carbon::parse($this->profile->experience_start)
-                                ->diffInDays(now()) / 365.25,
-                            1
-                        )
-                        : 0,
+                    ? Carbon::parse($this->profile->experience_start)->diffInYears(now())
+                    : ($this->profile->experience_years ?? 0),
 
                     'syndicate_number' => $this->profile->syndicate_number,
 

@@ -13,11 +13,12 @@ class UserType
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next ,$type): Response
+    public function handle(Request $request, Closure $next, $type): Response
     {
-        if ($request->user()->type == $type)
+        if ($request->user() && $request->user()->type === $type) {
             return $next($request);
-        else    
-            abort('403');
+        }
+
+        return apiError('غير مصرح لك بالوصول لهذا الإجراء', null, 403);
     }
 }
