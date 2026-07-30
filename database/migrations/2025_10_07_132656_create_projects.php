@@ -18,10 +18,8 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            
-            // 1. كود فريد للمشروع يعرض في واجهة نجاح العملية (Success Screen)
             $table->string('project_code', 20)->unique()->nullable(); 
-            // نوع الحرفي المطلوب في حال كان المشروع تشطيب
+     
             $table->enum('craftsman_type', [
                'electricity',   // كهرباء
                'plumbing',      // سباكة
@@ -44,11 +42,15 @@ return new class extends Migration
             
             $table->unsignedInteger('area'); //'in square meters (m2)'
 
-            $table->string('location_details'); // يستقبل تفاصيل (حي، شارع)
-            $table->string('building_no', 15);//'رقم قطعة الأرض أو البناء'
+            $table->string('location_details'); 
+            $table->string('building_no', 15);
             
             $table->text('description'); 
             $table->enum('visibility', ['public', 'private'])->default('public');//طريقة ظهور المشروع
+            $table->enum('invitation_type', [
+              'public',
+              'private'
+            ])->default('public');
             $table->foreignId('provider_profile_id')->nullable()->constrained('profiles')->nullOnDelete();
             $table->unsignedSmallInteger('tender_duration')->default(3);
 
@@ -58,7 +60,6 @@ return new class extends Migration
             ])->default('day');
             $table->decimal('budget', 15, 2)->nullable(); 
             
-            // إذا كان المدير سيقبل أو يرفض المشاريع
             $table->enum('status', ['pending', 'new', 'active', 'completed'])->default('pending');
             $table->enum('execution_status', [
                 'not_started',
@@ -69,7 +70,7 @@ return new class extends Migration
 
             
             $table->string('comment' , 1000)->nullable();
-
+            $table->unsignedTinyInteger('progress_percentage')->default(0);
             $table->foreignId('province_id')->constrained();                                  
             $table->foreignId('project_type_id')->constrained();                                  
             $table->foreignId('client_id')->constrained('users');                                    

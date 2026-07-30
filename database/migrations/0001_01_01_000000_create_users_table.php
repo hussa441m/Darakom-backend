@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('type', ['admin', 'client', 'provider'])->default('client');
             $table->enum('status', ['pending', 'active', 'closed', 'locked'])->default('pending');
-    
+            $table->foreignId('province_id')->constrained()->cascadeOnDelete();
             $table->string('avatar')->nullable();
             $table->string('fcm_token')->nullable(); //'رمز الجهاز لإرسال الإشعارات اللحظية
             $table->boolean('is_notifications_enabled')->default(true) ; //'حالة تفعيل الإشعارات من واجهة الإعدادات'
@@ -68,10 +68,10 @@ return new class extends Migration
             $table->string('logo')->nullable();
 
             $table->string('admin_comment', 1000)->nullable();
-
+            $table->foreignId('province_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->unique()->constrained();
             $table->foreignId('role_id')->constrained();
-
+            
             $table->timestamps();
         });
 

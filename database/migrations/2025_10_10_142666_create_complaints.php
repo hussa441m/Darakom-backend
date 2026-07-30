@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();            
-            $table->string('text');      
-            $table->enum('status', ['pending', 'resolved', 'rejected', 'closed'])->default('pending');
-            $table->text('admin_response')->nullable();    //'رد الأدمن أو الإجراء المتخذ لحل الشكوى'                    
+            $table->text('text');      
+            $table->enum('type', ['against_client','against_provider','against_me']);
+            $table->enum('status', ['pending','under_review','resolved','rejected','closed'])->default('pending');
+            $table->text('admin_response')->nullable();                       
                                          
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();                        
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('against_user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();             
 
         });
