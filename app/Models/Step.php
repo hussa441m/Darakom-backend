@@ -21,7 +21,7 @@ class Step extends Model
         return $this->belongsTo(Project::class);
     }
 
-    // علاقة الخطوة بالتقارير المرفوعة عنها (جديد)
+  
     public function reports()
     {
         return $this->hasMany(ProjectReport::class);

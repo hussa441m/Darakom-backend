@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Complaint extends Model
 {
     protected $fillable = [
-        'text', 
-        'status',                  // تم إضافته ليعبر عن (معلقة، تم حلها، مرفوضة)
-        'admin_response',  // تم إضافته لتخزين رد الأدمن عند الحل أو الرفض
-        'user_id', 
+        'text',
+        'type',
+        'status',
+        'admin_response',
         'project_id',
-       
+        'user_id',
+        'against_user_id',
     ];
 
     public function project()
@@ -20,8 +21,14 @@ class Complaint extends Model
         return $this->belongsTo(Project::class);
     }
 
+  
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function againstUser()
+    {
+        return $this->belongsTo(User::class, 'against_user_id');
     }
 }

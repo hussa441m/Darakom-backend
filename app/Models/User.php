@@ -24,8 +24,8 @@ class User extends Authenticatable
           'email',
           'address',
           'password',
-          'type',        // admin, client, provider
-          'status',      // pending, active, closed, locked
+          'type',       
+          'status',      
           'avatar',
           'fcm_token',
           'is_notifications_enabled',

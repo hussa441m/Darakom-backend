@@ -15,21 +15,17 @@ class Rating extends Model
     ];
 
 
-    // التقييم تابع لمشروع
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
 
 
-    // الشخص الذي قام بالتقييم
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-
-    // الشخص الذي استلم التقييم
     public function toUser()
     {
         return $this->belongsTo(User::class, 'to_user_id');

@@ -19,34 +19,28 @@ class Profile extends Model
     ];
 
 
-    // البروفايل تابع لمستخدم
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
 
-    // البروفايل له دور (مقاول، مهندس، حرفي...)
     public function role()
     {
         return $this->belongsTo(Role::class);
     }
 
-
-    // الملفات المرتبطة بالبروفايل
     public function documents()
     {
         return $this->morphMany(Document::class, 'documentable');
     }
 
-    // المشاريع التي ينفذها هذا المزود
     public function projects()
     {
         return $this->hasMany(Project::class, 'performed_by');
     }
 
 
-    // الخدمات التي يقدمها الحرفي
     public function serviceCategories()
     {
         return $this->belongsToMany(
@@ -66,7 +60,19 @@ class Profile extends Model
         return $this->hasMany(Post::class);
     }
     public function qualifications()
-{
-    return $this->hasMany(Qualification::class);
-}
+    {
+       return $this->hasMany(Qualification::class);
+    }
+    public function invitations()
+    {
+       return $this->hasMany( ProjectInvitation::class,'provider_profile_id');
+    }
+    public function services()
+    {
+       return $this->belongsToMany(Service::class,'profile_service');
+    }
+    public function previousWorks()
+    {
+       return $this->hasMany( PreviousWork::class);
+    }
 }
