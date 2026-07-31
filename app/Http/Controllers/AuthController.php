@@ -18,10 +18,12 @@ class AuthController extends Controller
             'last_name'  => 'required|string|max:50',
             'email' => 'required|email|max:100|unique:users',
             'password' => 'required|confirmed|min:6',
+            'province_id' => 'required|exists:provinces,id',
             'type' => 'required|in:client,provider',
             'experience_start' => 'required_if:type,provider|date',
             'role_id' => 'required_if:type,provider|exists:roles,id',
             'work_area' => 'required_if:type,provider|string|max:100',
+
             'documents' => 'nullable|array',
             'documents.*.file' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
             'documents.*.type' => 'required|exists:document_types,id',
@@ -37,6 +39,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
             'type' => $validated['type'],
             'status' => $validated['status'],
+            'province_id' => $validated['province_id'],
         ]);
 
         if ($user->type === 'provider') {
@@ -118,10 +121,10 @@ class AuthController extends Controller
     }
 
 
-
-      public function getProfile(Request $request)
-     {
+    public function getProfile(Request $request)
+    {
        $user = $request->user()->load([
+        'province',
        'profile.role',
        'profile.documents',
        'profile.qualifications',
@@ -132,7 +135,8 @@ class AuthController extends Controller
         new UserResource($user)
     );
     } 
-      public function updateProfile(Request $request)
+
+    public function updateProfile(Request $request)
     {
     $user = $request->user();
 
@@ -141,6 +145,7 @@ class AuthController extends Controller
         'last_name'  => 'required|string|max:50',
         'email'      => 'required|email|max:100|unique:users,email,' . $user->id,
         'address'    => 'nullable|string|max:255',
+        'province_id' => 'required|exists:provinces,id',
 
         'experience_start' => $user->type === 'provider'
         ? 'required|date'
@@ -162,6 +167,7 @@ class AuthController extends Controller
         'last_name'  => $validated['last_name'],
         'email'      => $validated['email'],
         'address'    => $validated['address'] ?? $user->address,
+        'province_id' => $validated['province_id'],
     ]);
 
     if ($user->type === 'provider' && $user->profile) {
@@ -176,16 +182,14 @@ class AuthController extends Controller
     }
 
     $user->load([
+         'province',
         'profile.role',
         'profile.documents',
         'profile.qualifications',
     ]);
 
-    return apiSuccess(
-        'تم تعديل الحساب بنجاح',
-        new UserResource($user)
-    );
-}
+    return apiSuccess('تم تعديل الحساب بنجاح',new UserResource($user) );
+  }
 
 
     public function logout(Request $request)
