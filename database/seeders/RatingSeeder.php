@@ -12,17 +12,20 @@ class RatingSeeder extends Seeder
         $ratings = [
             [
                 'id' => 1,
-                'rating' => 5,
+                'rate' => 5,
                 'comment' => 'خدمة ممتازة وتنفيذ سريع.',
+                'project_id' => 1,
                 'user_id' => 7,
-                'profile_id' => 1,
+                'to_user_id' => 1,
             ],
+
             [
                 'id' => 2,
-                'rating' => 4,
+                'rate' => 4,
                 'comment' => 'عمل جيد.',
+                'project_id' => 3,
                 'user_id' => 7,
-                'profile_id' => 6,
+                'to_user_id' => 8,
             ],
         ];
 
