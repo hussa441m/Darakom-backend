@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-// use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ClientController;
 // use App\Http\Controllers\DocumentController;
 // use App\Http\Controllers\NotificationController;
@@ -39,19 +39,20 @@ Route::post('/login', [AuthController::class, 'login']);
 //     Route::get('getClients/{role}', [CustomerController::class, 'getClients']);
 //     Route::get('getSteps/{project}', [ProjectController::class, 'getSteps']);
 
-//     Route::middleware('user-type:client')->prefix('client')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
-//         Route::controller(ClientController::class)->group(function () {
-//             Route::get('getTotals',  'getTotals');
-//             Route::get('getNewProjects',  'getNewProjects');
-//             Route::get('getProjects/{status}',  'getProjects');
-//             Route::get('isActive',  'isActive');
+    Route::get('/provider/dashboard', [ProviderController::class, 'dashboard']);
+    Route::get('/provider/public-tenders', [ProviderController::class, 'publicTenders']);
+    Route::get('/provider/private-tenders', [ProviderController::class, 'privateTenders']);
+    Route::get('/provider/tenders/{id}', [ProviderController::class, 'showTender']);
+    Route::post('/provider/invitations/{id}/decline',[ProviderController::class, 'declineInvitation']);
+    Route::get('/provider/offers',[ProviderController::class, 'myOffers']);
+    Route::post('/provider/projects/{project}/offers', [ProviderController::class, 'storeOffer']);
 
-//             Route::post('addOffer/{project}',  'addOffer');
-//             Route::post('addStep/{project}',  'addStep');
-//             Route::post('end/{project}',  'endProject');
-//         });
-//     });
+
+
+});
+
     Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group(function () {
     Route::get('projects',[ClientController::class, 'projects']);
     Route::get('projects/{project}',[ClientController::class, 'show']);
