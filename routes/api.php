@@ -6,7 +6,7 @@ use App\Http\Controllers\ClientController;
 // use App\Http\Controllers\DocumentController;
 // use App\Http\Controllers\NotificationController;
 // use App\Http\Controllers\ProjectController;
-// use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 // use Illuminate\Support\Facades\URL;
@@ -18,7 +18,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Route::get('/provinces', [SettingController::class, 'provinces']);
+Route::get('/provinces', [SettingController::class, 'provinces']);
 
  Route::middleware('auth:sanctum')->group(function () {
 
@@ -27,7 +27,7 @@ Route::post('/login', [AuthController::class, 'login']);
 //     Route::apiResource('/projects', ProjectController::class);
 
  Route::get('profile', [AuthController::class, 'getProfile']);
- Route::put('profile', [AuthController::class, 'updateProfile']);
+ Route::put('profile/update', [AuthController::class, 'updateProfile']);
  Route::post('logout', [AuthController::class, 'logout']);
 
 //     Route::controller(NotificationController::class)->group(function () {
@@ -48,8 +48,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/provider/invitations/{id}/decline',[ProviderController::class, 'declineInvitation']);
     Route::get('/provider/offers',[ProviderController::class, 'myOffers']);
     Route::post('/provider/projects/{project}/offers', [ProviderController::class, 'storeOffer']);
-
-
+    Route::put('/provider/offers/{offer}', [ProviderController::class, 'updateOffer']);
+    Route::delete('/provider/offers/{offer}', [ProviderController::class, 'deleteOffer']);
+    Route::get('/provider/projects', [ProviderController::class, 'projects']);
+    Route::get('/provider/projects/{project}', [ProviderController::class, 'showProject']);
+    Route::get('/provider/projects/{project}/tracking', [ProviderController::class, 'projectTracking']);
+    Route::post('/provider/projects/{project}/reports', [ProviderController::class, 'addReport']);
+    Route::post('/provider/projects/{project}/end', [ProviderController::class, 'endProject']);
 
 });
 
