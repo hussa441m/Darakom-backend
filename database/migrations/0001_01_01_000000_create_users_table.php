@@ -68,7 +68,6 @@ return new class extends Migration
             $table->string('logo')->nullable();
 
             $table->string('admin_comment', 1000)->nullable();
-            $table->foreignId('province_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->unique()->constrained();
             $table->foreignId('role_id')->constrained();
             
