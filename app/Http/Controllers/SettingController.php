@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Province;
 
 class SettingController extends Controller
 {
-    
-    function provinces(){
-        return apiSuccess("قائمة المحافظات", DB::table('provinces')->select("id" , "name")->get());
+    /**
+     * قائمة المحافظات
+     */
+    public function provinces()
+    {
+        $provinces = Province::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return apiSuccess( "قائمة المحافظات", $provinces);
     }
 }
