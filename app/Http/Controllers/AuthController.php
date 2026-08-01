@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
@@ -139,13 +140,24 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
     $user = $request->user();
+//     dd(
+//     User::where('email', $request->email)
+//         ->get(['id','email'])
+// );
 
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:50',
-        'last_name'  => 'required|string|max:50',
-        'email'      => 'required|email|max:100|unique:users,email,' . $user->id,
-        'address'    => 'nullable|string|max:255',
-        'province_id' => 'required|exists:provinces,id',
+       $validated = $request->validate([
+    'first_name' => 'required|string|max:50',
+    'last_name'  => 'required|string|max:50',
+    'email' => [
+        'required',
+        'email',
+        'max:100',
+        Rule::unique('users', 'email')->ignore($user->id, 'id'),
+    ],
+    'province_id' => 'required|exists:provinces,id',
+
+ 'address'    => 'nullable|string|max:255',
+       // 'province_id' => 'required|exists:provinces,id',
 
         'experience_start' => $user->type === 'provider'
         ? 'required|date'
