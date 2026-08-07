@@ -7,31 +7,37 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 { 
     protected $fillable = [
-        'project_code',      
-        'title', 
-        'work_type',          // إنشاء أو تشطيب
-        'craftsman_type',     // نوع الحرفي (كهرباء، سباكة...)
-        'tender_type',        // مستعجل أو عادي
-        'tender_duration_days',
-        'start_date', 
-        'end_date', 
-        'duration', 
-        'area', 
-        'location_details', 
-        'building_no', 
-        'description', 
-        'visibility',
-        'budget', 
-        'status',             
-        'execution_status',   
-        'rate', 
-        'comment', 
-        'project_type_id', 
-        'client_id',          
-        'performed_by',       
-        'province_id',
-        'provider_profile_id'
-    ];
+    'project_code',
+    'title',
+    'work_type',
+    'craftsman_type',
+    'tender_type',
+
+    'tender_duration',
+    'tender_duration_unit',
+
+    'start_date',
+    'end_date',
+
+    'area',
+    'location_details',
+    'building_no',
+    'description',
+    'visibility',
+    'invitation_type',
+
+    'budget',
+    'status',
+    'execution_status',
+    'comment',
+    'progress_percentage',
+
+    'project_type_id',
+    'province_id',
+    'client_id',
+    'performed_by',
+    'provider_profile_id',
+];
     
   
     public function province()

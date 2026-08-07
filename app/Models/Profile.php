@@ -67,10 +67,7 @@ class Profile extends Model
     {
        return $this->hasMany( ProjectInvitation::class,'provider_profile_id');
     }
-    public function services()
-    {
-       return $this->belongsToMany(Service::class,'profile_service');
-    }
+  
     public function previousWorks()
     {
        return $this->hasMany( PreviousWork::class);

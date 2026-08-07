@@ -24,9 +24,9 @@ class Offer extends Model
     }
 
     public function provider()
-    {
-       return $this->belongsTo(User::class, 'offered_by');
-    }
+{
+    return $this->belongsTo(Profile::class, 'offered_by');
+}
 
     public function documents()
     {
