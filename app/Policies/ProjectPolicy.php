@@ -26,7 +26,17 @@ class ProjectPolicy
     {
         return $user->type === 'client';
     }
-
+     
+    public function view(User $user, Project $project): bool
+{
+    return $this->isAdmin($user)
+        || $this->isProjectOwner($user, $project)
+        || (
+            $user->type === 'provider'
+            && $user->profile
+            && $project->performed_by == $user->profile->id
+        );
+}
 
     private function isAdmin(User $user): bool
     {
