@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Project\StepController;
+use App\Http\Controllers\ProviderController;
 // use App\Http\Controllers\DocumentController;
 // use App\Http\Controllers\NotificationController;
 // use App\Http\Controllers\ProjectController;
@@ -55,6 +56,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/provider/projects/{project}/tracking', [ProviderController::class, 'projectTracking']);
     Route::post('/provider/projects/{project}/reports', [ProviderController::class, 'addReport']);
     Route::post('/provider/projects/{project}/end', [ProviderController::class, 'endProject']);
+    Route::get('/provider/projects/{project}/steps', [StepController::class, 'index']);
+    Route::post('/provider/projects/{project}/steps', [StepController::class, 'store']);
+    Route::get('/provider/projects/{project}/steps/{step}', [StepController::class, 'show']);
+    Route::put('/provider/steps/{step}', [StepController::class, 'update']);
+    Route::delete('/provider/steps/{step}', [StepController::class, 'destroy']);
 
 });
 
@@ -67,8 +73,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('projects/{project}/rate', [ClientController::class, 'rate']);
     Route::get('complaints', [ClientController::class, 'complaints']);
     Route::post('complaints',[ClientController::class, 'storeComplaint']);
+    Route::get('projects/{project}/steps', [StepController::class, 'clientIndex']);
+    Route::get('projects/{project}/steps/{step}', [StepController::class, 'clientShow']);
 
           });
+
+Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(function () {
+    Route::get('/steps', [StepController::class, 'adminIndex']);
+    Route::get('/steps/{step}', [StepController::class, 'adminShow']);
+    Route::delete('/steps/{step}', [StepController::class, 'adminDestroy']);
+});
 //     });
 // });
 
