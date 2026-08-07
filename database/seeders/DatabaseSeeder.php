@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
     $this->call(DocumentSeeder::class);
     $this->call(ServiceCategorySeeder::class);
     $this->call(ArtisanServiceSeeder::class);
-    $this->call(ServiceSeeder::class);
     $this->call(PreviousWorkSeeder::class);
     $this->call(ProjectInvitationSeeder::class);
     $this->call(RatingSeeder::class);
