@@ -47,6 +47,21 @@ class ComplaintController extends Controller
 	}
 
 	/**
+	 * Return complaints submitted against the authenticated user
+	 */
+	public function complaintsAgainstMe(Request $request)
+	{
+		$user = $request->user();
+
+		$complaints = Complaint::with(['project', 'user'])
+			->where('against_user_id', $user->id)
+			->latest()
+			->get();
+
+		return apiSuccess('الشكاوى المقدمة ضدك.', $complaints);
+	}
+
+	/**
 	 * Show a single complaint (only owner or target can view)
 	 */
 	public function show(Request $request, Complaint $complaint)
