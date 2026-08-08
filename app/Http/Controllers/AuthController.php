@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Http\Resources\UserResource;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -119,6 +122,62 @@ class AuthController extends Controller
             'status' => $user->status,
             'token' => $token
         ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $email = $validated['email'];
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+        DB::table('password_reset_tokens')->insert([
+            'email' => $email,
+            'token' => $otp,
+            'created_at' => Carbon::now(),
+        ]);
+
+        Mail::raw("رمز التحقق لتغيير كلمة المرور هو: {$otp}. لا تشارك هذا الرمز مع أي شخص.", function ($message) use ($email) {
+            $message->to($email)
+                ->subject('رمز إعادة تعيين كلمة المرور');
+        });
+
+        return apiSuccess('تم إرسال رمز إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. تحقق من صندوق الوارد.', []);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|digits:6',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $validated['email'])
+            ->where('token', $validated['otp'])
+            ->first();
+
+        if (!$record) {
+            return apiError('رمز التحقق غير صحيح أو البريد الإلكتروني غير موجود', null, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $expiresAt = Carbon::parse($record->created_at)->addMinutes(15);
+        if (Carbon::now()->greaterThan($expiresAt)) {
+            DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+            return apiError('انتهت صلاحية رمز إعادة التعيين. يرجى طلب رمز جديد.', null, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user = User::where('email', $validated['email'])->first();
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+
+        return apiSuccess('تم تغيير كلمة المرور بنجاح');
     }
 
 
