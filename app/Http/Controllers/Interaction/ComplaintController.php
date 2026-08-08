@@ -82,7 +82,6 @@ class ComplaintController extends Controller
 	 */
 	public function index(Request $request)
 	{
-		$this->authorize('viewAny', Complaint::class);
 
 		$complaints = Complaint::with(['user', 'project'])
 			->latest()
@@ -99,7 +98,6 @@ class ComplaintController extends Controller
 	{
 		$this->authorize('update', $complaint);
 
-		$validated = $request->validate([
 			'status' => 'required|string',
 			'admin_response' => 'nullable|string',
 			'against_user_status' => 'nullable|string',
