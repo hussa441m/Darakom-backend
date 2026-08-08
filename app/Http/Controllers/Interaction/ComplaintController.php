@@ -124,3 +124,4 @@ class ComplaintController extends Controller
 
         return apiSuccess('تم تنفيذ الإجراء على الشكوى.', $complaint->fresh()->load(['user', 'project', 'againstUser']));
     }
+}
