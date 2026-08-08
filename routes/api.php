@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Interaction\ComplaintController;
 use App\Http\Controllers\Project\StepController;
 use App\Http\Controllers\ProviderController;
 // use App\Http\Controllers\DocumentController;
@@ -61,6 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/provider/projects/{project}/steps/{step}', [StepController::class, 'show']);
     Route::put('/provider/steps/{step}', [StepController::class, 'update']);
     Route::delete('/provider/steps/{step}', [StepController::class, 'destroy']);
+    Route::get('/provider/complaints', [ComplaintController::class, 'myComplaints']);
+    Route::post('/provider/complaints', [ComplaintController::class, 'store']);
+    Route::get('/provider/complaints/{complaint}', [ComplaintController::class, 'show']);
 
 });
 
@@ -71,8 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('projects/{project}/offers/{offer}/accept',[ClientController::class, 'acceptOffer']);
     Route::post('projects/{project}/offers/{offer}/reject',[ClientController::class, 'rejectOffer']);
     Route::post('projects/{project}/rate', [ClientController::class, 'rate']);
-    Route::get('complaints', [ClientController::class, 'complaints']);
-    Route::post('complaints',[ClientController::class, 'storeComplaint']);
+    Route::get('projects/{project}/steps', [StepController::class, 'clientIndex']);
+    Route::get('projects/{project}/steps/{step}', [StepController::class, 'clientShow']);
+    Route::get('complaints', [ComplaintController::class, 'myComplaints']);
+    Route::post('complaints', [ComplaintController::class, 'store']);
+    Route::get('complaints/{complaint}', [ComplaintController::class, 'show']);
     Route::get('projects/{project}/steps', [StepController::class, 'clientIndex']);
     Route::get('projects/{project}/steps/{step}', [StepController::class, 'clientShow']);
 
@@ -82,6 +89,8 @@ Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(f
     Route::get('/steps', [StepController::class, 'adminIndex']);
     Route::get('/steps/{step}', [StepController::class, 'adminShow']);
     Route::delete('/steps/{step}', [StepController::class, 'adminDestroy']);
+    Route::get('/complaints', [ComplaintController::class, 'index']);
+    Route::post('/complaints/{complaint}/action', [ComplaintController::class, 'takeAction']);
 });
 //     });
 // });
