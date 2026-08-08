@@ -94,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/provider/complaints', [ComplaintController::class, 'myComplaints']);
     Route::post('/provider/complaints', [ComplaintController::class, 'store']);
     Route::get('/provider/complaints/{complaint}', [ComplaintController::class, 'show']);
+    Route::get('/provider/complaints-against-me', [ComplaintController::class, 'complaintsAgainstMe']);
 
   
     

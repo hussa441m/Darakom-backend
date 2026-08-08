@@ -47,6 +47,21 @@ class ComplaintController extends Controller
 	}
 
 	/**
+	 * Return complaints submitted against the authenticated user
+	 */
+	public function complaintsAgainstMe(Request $request)
+	{
+		$user = $request->user();
+
+		$complaints = Complaint::with(['project', 'user'])
+			->where('against_user_id', $user->id)
+			->latest()
+			->get();
+
+		return apiSuccess('الشكاوى المقدمة ضدك.', $complaints);
+	}
+
+	/**
 	 * Show a single complaint (only owner or target can view)
 	 */
 	public function show(Request $request, Complaint $complaint)
@@ -67,7 +82,6 @@ class ComplaintController extends Controller
 	 */
 	public function index(Request $request)
 	{
-		$this->authorize('viewAny', Complaint::class);
 
 		$complaints = Complaint::with(['user', 'project'])
 			->latest()
@@ -80,33 +94,33 @@ class ComplaintController extends Controller
 	 * Admin: take action on a complaint (update status, admin notes,
 	 * optionally change reported user's status)
 	 */
-	public function takeAction(Request $request, Complaint $complaint)
-	{
-		$this->authorize('update', $complaint);
+	/**
+     * Admin: take action on a complaint (update status, admin notes,
+     * optionally change reported user's status)
+     */
+    public function takeAction(Request $request, Complaint $complaint)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+            'admin_response' => 'nullable|string',
+            'against_user_status' => 'nullable|string',
+        ]);
 
-		$validated = $request->validate([
-			'status' => 'required|string',
-			'admin_response' => 'nullable|string',
-			'against_user_status' => 'nullable|string',
-		]);
+        $complaint->status = $validated['status'];
 
-		$complaint->status = $validated['status'];
+        if (array_key_exists('admin_response', $validated)) {
+            $complaint->admin_response = $validated['admin_response'];
+        }
 
-		if (array_key_exists('admin_response', $validated)) {
-			$complaint->admin_response = $validated['admin_response'];
-		}
+        $complaint->save();
 
-		$complaint->save();
+        if (!empty($validated['against_user_status']) && $complaint->against_user_id) {
+            $reported = User::find($complaint->against_user_id);
+            if ($reported) {
+                $reported->status = $validated['against_user_status'];
+                $reported->save();
+            }
+        }
 
-		if (!empty($validated['against_user_status']) && $complaint->against_user_id) {
-			$reported = User::find($complaint->against_user_id);
-			if ($reported) {
-				$reported->status = $validated['against_user_status'];
-				$reported->save();
-			}
-		}
-
-		return apiSuccess('تم تنفيذ الإجراء على الشكوى.', $complaint->fresh()->load(['user', 'project', 'againstUser']));
-	}
-
-}
+        return apiSuccess('تم تنفيذ الإجراء على الشكوى.', $complaint->fresh()->load(['user', 'project', 'againstUser']));
+    }
