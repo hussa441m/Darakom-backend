@@ -201,10 +201,29 @@ class AuthController extends Controller
 
 
     public function logout(Request $request)
-{
-    $request->user()->currentAccessToken()->delete();
+    {
+        $request->user()->currentAccessToken()->delete();
 
-    return apiSuccess('تم تسجيل الخروج بنجاح');
-}
+        return apiSuccess('تم تسجيل الخروج بنجاح');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return apiError('كلمة المرور الحالية غير صحيحة', null, 422);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return apiSuccess('تم تغيير كلمة المرور بنجاح');
+    }
 }
     

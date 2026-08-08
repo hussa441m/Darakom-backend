@@ -37,6 +37,7 @@ Route::get('/provinces', [SettingController::class, 'provinces']);
  Route::get('profile', [AuthController::class, 'getProfile']);
  Route::put('profile/update', [AuthController::class, 'updateProfile']);
  Route::post('logout', [AuthController::class, 'logout']);
+ Route::post('change-password', [AuthController::class, 'changePassword']);
 
 //     Route::controller(NotificationController::class)->group(function () {
 //         Route::get('/notifications',  'index');
