@@ -95,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/provider/complaints', [ComplaintController::class, 'store']);
     Route::get('/provider/complaints/{complaint}', [ComplaintController::class, 'show']);
 
-   Route::get('/provider/complaints', [ProviderController::class, 'complaints']);
+  
     
    Route::get('/provider/invitations',[ProjectInvitationController::class, 'index']);
    Route::get('/provider/invitations/{invitation}',[ProjectInvitationController::class, 'show']);
