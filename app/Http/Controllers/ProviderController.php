@@ -4,108 +4,329 @@ namespace App\Http\Controllers;
 
 use App\Models\Offer;
 use App\Models\Project;
-use App\Notifications\NewOffer;
+use App\Models\ProjectInvitation;
+use App\Models\Rating;
 use Illuminate\Http\Request;
+use App\Models\Profile;
+use App\Models\ProjectReport;
+use App\Models\Complaint;
+use Illuminate\Support\Facades\Auth;
 
-class ClientController extends Controller
+
+class ProviderController extends Controller
 {
-
-    function getTotals(Request $request)
-    {
-        $profile = $request->user()->profile;
-
-
-        $activeProject = Project::where('performed_by', $profile->id)->where('status', 'active')->count();
-        $completedProject = Project::where('performed_by', $profile->id)->where('status', 'completed')->count();
-        $rate = $profile->projects?->avg('rate');
-        return apiSuccess("إحصائيات عن حسابك", compact('activeProject', 'completedProject', 'rate'));
-    }
-    function getNewProjects(Request $request)
-    {
-        $projectTypes = $request->user()->profile->projectTypes->modelKeys();
-        $projects =  Project::with('projectType', 'province')->where('status', 'new')->whereIn('project_type_id', $projectTypes)->get();
-        return apiSuccess("المشاريع الجديدة" . $request->user()->profile->id, $projects);
-    }
-
-    function getProjects(Request $request, $status)
-    {
-        $profile = $request->user()->profile;
-        $projects =  Project::where('performed_by', $profile->id)->where('status', $status)->get();
-        return apiSuccess("المشاريع التي حالتها $status", $projects);
-    }
-    function isActive(Request $request)
+    public function dashboard(Request $request)
     {
         $user = $request->user();
-        return apiSuccess("حالة المستخدم", ['is_active' => $user->status == 'active']);
+
+        $profile = $user->profile;
+
+        if (!$profile) {
+            return apiError("Provider profile not found.", 404);
+        }
+
+        $activeProjects = Project::where(
+            'provider_profile_id',
+            $profile->id
+        )->where('execution_status', 'in_progress')->count();
+
+        $completedProjects = Project::where(
+            'provider_profile_id',
+            $profile->id
+        )->where('execution_status', 'finished')->count();
+
+        $newTenders = ProjectInvitation::where(
+            'provider_profile_id',
+            $profile->id
+        )->where('status', 'pending')
+        ->where(function ($query) {
+            $query->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        })->count();
+
+        $averageRating = $user->receivedRatings()->avg('rate');
+
+        $averageRating = $averageRating
+            ? round($averageRating, 1)
+            : 0;
+
+        $privateInvitations = ProjectInvitation::with('project')
+            ->where('provider_profile_id', $profile->id)
+            ->where('status', 'pending')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $projectsInProgress = Project::where(
+            'provider_profile_id',
+            $profile->id
+        )
+        ->where('execution_status', 'in_progress')
+        ->latest()
+        ->take(5)
+        ->get();
+
+        return apiSuccess( "بيانات لوحة تحكم مزود الخدمة",
+            [
+                'statistics' => [
+                    'completed_projects' => $completedProjects,
+                    'active_projects' => $activeProjects,
+                    'new_tenders' => $newTenders,
+                    'average_rating' => $averageRating,
+                ],
+
+                'private_invitations' => $privateInvitations,
+
+                'projects_in_progress' => $projectsInProgress,
+            ]
+        );
+    }
+    public function publicTenders(Request $request)
+    {
+               $profile = $request->user()->profile;
+
+               $projectTypeIds = $profile->role->projectTypes->pluck('id');
+               $tenders = Project::with(['projectType','province','client'])
+              ->where('visibility', 'public')
+              ->where('invitation_type', 'public')
+              ->whereIn('status', ['new', 'pending'])
+              ->whereNull('provider_profile_id')
+              ->latest()
+              ->get();
+
+           return apiSuccess("المناقصات العامة", $tenders);
+    }
+    public function privateTenders(Request $request)
+    {
+             $profile = $request->user()->profile;
+
+            $invitations = ProjectInvitation::with([
+           'project.projectType',
+           'project.province',
+           'project.client',
+          ])
+          ->where('provider_profile_id', $profile->id)
+          ->where('status', 'pending')
+          ->where(function ($query) {
+          $query->whereNull('expires_at')
+              ->orWhere('expires_at', '>', now());
+         })
+        ->latest()
+        ->get();
+
+       return apiSuccess('المناقصات الخاصة', $invitations);
     }
 
-    function addOffer(Request $request, Project $project)
-    {
-        $user = $request->user();
-        if ($user->status != 'active')
-            return apiError("لا يمكنك إضافة عرض في الوقت الحالي، يجب أن يكون حسابك مفعلا");
 
-        $validated =  $request->validate([
-            'cost' => 'required|integer|min:0',
-            'duration' => 'required|integer|min:1',
-            'details' => 'required',
-            'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,png,jpeg,png,webp|max:50000',
-            'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'required|max:255',
+      public function showTender($id)
+    {
+        $user = request()->user();
+
+        $profile = $user->profile;
+
+        if (!$profile) {
+           return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+      }
+
+         $publicTender = Project::with([
+           'projectType',
+           'province',
+           'client',
+        ])
+    ->where('id', $id)
+    ->where('visibility', 'public')
+    ->where('invitation_type', 'public')
+    ->whereIn('status', ['new', 'pending'])
+    ->whereNull('provider_profile_id')
+    ->first();
+
+    if ($publicTender) {
+        return apiSuccess(
+            "تفاصيل المناقصة العامة",
+            $publicTender
+        );
+    }
+
+    $privateTender = ProjectInvitation::with([
+        'project.projectType',
+        'project.province',
+        'project.client',
+    ])
+    ->where('project_id', $id)
+    ->where('provider_profile_id', $profile->id)
+    ->where('status', 'pending')
+    ->where(function ($query) {
+        $query->whereNull('expires_at')
+              ->orWhere('expires_at', '>', now());
+    })
+    ->first();
+
+    if ($privateTender) {
+        return apiSuccess(
+            "تفاصيل المناقصة الخاصة",
+            $privateTender
+        );
+    }
+
+    return apiError("هذه المناقصة غير متاحة لك");
+}
+
+
+ 
+    public function declineInvitation($id)
+   {
+       $user = request()->user();
+ 
+       $profile = $user->profile;
+
+        if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+       }
+
+       $invitation = ProjectInvitation::where('id', $id)
+         ->where('provider_profile_id', $profile->id)
+         ->where('status', 'pending')
+         ->first();
+
+        if (!$invitation) {
+          return apiError("الدعوة غير موجودة أو لا يمكنك رفضها");
+        }
+
+        $invitation->update([
+          'status' => 'declined',
+    ]);
+
+        return apiSuccess("تم رفض الدعوة بنجاح",$invitation);
+    }
+ 
+
+public function projects(Request $request)
+{
+    $profile = $request->user()->profile;
+
+    if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+    }
+
+    $projects = Project::with([
+        'projectType',
+        'province',
+        'client',
+    ])
+    ->where('provider_profile_id', $profile->id)
+    ->latest()
+    ->get();
+
+    return apiSuccess("مشاريعي", $projects);
+}
+
+public function showProject(Request $request, Project $project)
+{
+    $profile = $request->user()->profile;
+
+    if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+    }
+
+    if ($project->provider_profile_id != $profile->id) {
+        return apiError("هذا المشروع غير متاح لك");
+    }
+
+    $project->load([
+        'projectType',
+        'province',
+        'client',
+        'offers',
+        'reports',
+        'documents',
+    ]);
+
+    return apiSuccess("تفاصيل المشروع", $project);
+}
+
+  public function projectTracking(Request $request, Project $project)
+{
+    $profile = $request->user()->profile;
+
+    if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+    }
+    if ($project->provider_profile_id != $profile->id) {
+        return apiError("هذا المشروع غير متاح لك");
+    }
+
+    $project->load([
+        'projectType',
+        'province',
+        'client',
+        'reports',
+    ]);
+
+    return apiSuccess("متابعة المشروع", $project);
+}
+
+  public function addReport(Request $request, Project $project)
+{
+    $profile = $request->user()->profile;
+
+    if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
+    }
+
+    if ($project->provider_profile_id != $profile->id) {
+        return apiError("هذا المشروع غير متاح لك");
+    }
+
+    $validated = $request->validate([
+        'description' => 'required|string',
+        'reported_progress' => 'nullable|integer|min:0|max:100',
+        'step_id' => 'nullable|exists:steps,id',
+    ]);
+
+    $report = ProjectReport::create([
+        'description' => $validated['description'],
+        'reported_progress' => $validated['reported_progress'] ?? null,
+        'project_id' => $project->id,
+        'user_id' => $request->user()->id,
+        'step_id' => $validated['step_id'] ?? null,
+    ]);
+
+    if (isset($validated['reported_progress'])) {
+        $project->update([
+            'progress_percentage' => $validated['reported_progress'],
         ]);
-        $validated['project_id'] = $project->id;
-        $validated['offered_by'] = $user->profile->id;
-
-        $offer = Offer::create($validated);
-        if ($request->has('documents')) {
-            foreach ($request->documents as $document) {
-
-                $docName = $document['file']->store('projects', 'public');
-
-                $offer->documents()->create([
-                    'path' => $docName,
-                    'description' => $document['description'],
-                    'document_type_id' => $document['type'],
-                ]);
-            }
-        }
-        $project->customer->notify(new NewOffer($user->name));
-
-        return apiSuccess("تم إضافة عرضك", $offer);
     }
 
-    function addStep(Request $request, Project $project)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:100', 
-            'description' => 'nullable|string|max:1000', 
-            'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,png,jpeg,png,webp|max:50000',
-            'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'required|max:255',
-        ]);        
-    $validated['project_id'] = $project->id;
-        $step = $project->steps()->create($validated);
-        if ($request->has('documents')) {
-            foreach ($request->documents as $document) {
+    return apiSuccess("تمت إضافة التقرير بنجاح", $report);
+}
 
-                $docName = $document['file']->store('projects', 'public');
+public function endProject(Project $project)
+{
+    $profile = request()->user()->profile;
 
-                $step->documents()->create([
-                    'path' => $docName,
-                    'description' => $document['description'],
-                    'document_type_id' => $document['type'],
-                ]);
-            }
-        }
-        return apiSuccess("تم إضافة الخطوة بنجاح", $step);
+    if (!$profile) {
+        return apiError("لا يوجد ملف شخصي لمزود الخدمة");
     }
 
-    function endProject(Project $project){
-        $project->status = 'completed';
-        $project->save();
-        return apiSuccess("تم إنهاء المشروع بنجاح");;   
+    if ($project->provider_profile_id != $profile->id) {
+        return apiError("هذا المشروع لا يخصك");
     }
-    
+
+    if ($project->status == 'completed') {
+        return apiError("المشروع منتهي مسبقاً");
+    }
+
+    $project->update([
+        'status' => 'completed',
+        'execution_status' => 'finished',
+        'progress_percentage' => 100,
+        'end_date' => now(),
+    ]);
+
+    return apiSuccess("تم إنهاء المشروع بنجاح", $project->fresh());
+}
 }

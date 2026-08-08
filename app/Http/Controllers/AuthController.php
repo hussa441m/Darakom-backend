@@ -140,10 +140,6 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
     $user = $request->user();
-//     dd(
-//     User::where('email', $request->email)
-//         ->get(['id','email'])
-// );
 
        $validated = $request->validate([
     'first_name' => 'required|string|max:50',
