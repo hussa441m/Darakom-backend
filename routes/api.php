@@ -13,6 +13,7 @@ use App\Http\Controllers\Project\ProjectInvitationController;
 use App\Http\Controllers\Project\ProjectReportController;
 use App\Http\Controllers\Interaction\RatingController;
 use App\Http\Controllers\Interaction\ComplaintController;
+use App\Http\Controllers\Interaction\FavoriteController;
 use App\Http\Controllers\SettingController;
 
 use Illuminate\Http\Request;
@@ -38,6 +39,9 @@ Route::get('/provinces', [SettingController::class, 'provinces']);
  Route::put('profile/update', [AuthController::class, 'updateProfile']);
  Route::post('logout', [AuthController::class, 'logout']);
  Route::post('change-password', [AuthController::class, 'changePassword']);
+ Route::get('favorites', [FavoriteController::class, 'index']);
+ Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
+ Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
 
 //     Route::controller(NotificationController::class)->group(function () {
 //         Route::get('/notifications',  'index');
