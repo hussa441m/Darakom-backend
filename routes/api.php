@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\Interaction\ComplaintController;
+
 use App\Http\Controllers\Project\StepController;
 use App\Http\Controllers\ProviderController;
 // use App\Http\Controllers\DocumentController;
@@ -12,7 +12,9 @@ use App\Http\Controllers\Project\OfferController;
 use App\Http\Controllers\Project\ProjectInvitationController;
 use App\Http\Controllers\Project\ProjectReportController;
 use App\Http\Controllers\Interaction\RatingController;
+use App\Http\Controllers\Interaction\ComplaintController;
 use App\Http\Controllers\SettingController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 // use Illuminate\Support\Facades\URL;
