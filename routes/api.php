@@ -128,6 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('complaints', [ComplaintController::class, 'myComplaints']);
     Route::post('complaints', [ComplaintController::class, 'store']);
     Route::get('complaints/{complaint}', [ComplaintController::class, 'show']);
+      Route::get('/complaints-against-me', [ComplaintController::class, 'complaintsAgainstMe']);
     Route::get('projects/{project}/steps', [StepController::class, 'clientIndex']);
     Route::get('projects/{project}/steps/{step}', [StepController::class, 'clientShow']);
 
