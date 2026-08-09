@@ -13,7 +13,7 @@ class ServiceCategoryController extends Controller
     {
         $categories = ServiceCategory::all();
 
-        return apiSuccess('Service categories retrieved successfully', $categories);
+        return apiSuccess('تم استرجاع تصنيفات الخدمات بنجاح', $categories);
     }
 
     public function show($id)
@@ -21,10 +21,10 @@ class ServiceCategoryController extends Controller
         $category = ServiceCategory::find($id);
 
         if (! $category) {
-            return apiError('Service category not found', 404);
+            return apiError('تصنيف الخدمة غير موجود', 404);
         }
 
-        return apiSuccess('Service category retrieved successfully', $category);
+        return apiSuccess('تم استرجاع تصنيف الخدمة بنجاح', $category);
     }
 
     public function store(Request $request)
@@ -36,7 +36,7 @@ class ServiceCategoryController extends Controller
 
         $category = ServiceCategory::create($validated);
 
-        return apiSuccess('Service category created successfully', $category);
+        return apiSuccess('تم إنشاء تصنيف الخدمة بنجاح', $category);
     }
 
     public function update(Request $request, $id)
@@ -44,7 +44,7 @@ class ServiceCategoryController extends Controller
         $category = ServiceCategory::find($id);
 
         if (! $category) {
-            return apiError('Service category not found', 404);
+            return apiError('تصنيف الخدمة غير موجود', 404);
         }
 
         $validated = $request->validate([
@@ -57,7 +57,7 @@ class ServiceCategoryController extends Controller
 
         $category->update($validated);
 
-        return apiSuccess('Service category updated successfully', $category);
+        return apiSuccess('تم تعديل تصنيف الخدمة بنجاح', $category);
     }
 
     public function destroy($id)
@@ -65,11 +65,11 @@ class ServiceCategoryController extends Controller
         $category = ServiceCategory::find($id);
 
         if (! $category) {
-            return apiError('Service category not found', 404);
+            return apiError('تصنيف الخدمة غير موجود', 404);
         }
 
         $category->delete();
 
-        return apiSuccess('Service category deleted successfully', null);
+        return apiSuccess('تم حذف تصنيف الخدمة بنجاح', null);
     }
 }
