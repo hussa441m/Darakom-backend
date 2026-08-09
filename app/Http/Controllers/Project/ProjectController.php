@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Profile;
+use App\Notifications\UrgentProject;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -76,7 +78,29 @@ public function show(Project $project)
     );
 
     $project = Project::create($validated);
-    $project->load([
+
+// إذا كان المشروع مستعجلاً وعاماً
+if (
+    $project->tender_type === 'urgent' &&
+    $project->visibility === 'public' &&
+    $project->invitation_type === 'public'
+) {
+    $profiles = Profile::whereHas('role.projectTypes', function ($query) use ($project) {
+        $query->where('project_types.id', $project->project_type_id);
+    })
+    ->with('user')
+    ->get();
+
+    foreach ($profiles as $profile) {
+        if ($profile->user) {
+            $profile->user->notify(
+                new UrgentProject($project->id)
+            );
+        }
+    }
+}
+
+$project->load([
     'projectType',
     'province',
     'client'
