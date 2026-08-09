@@ -5,8 +5,8 @@ use App\Http\Controllers\ClientController;
 
 use App\Http\Controllers\Project\StepController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\NotificationController;
 // use App\Http\Controllers\DocumentController;
-// use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\OfferController;
 use App\Http\Controllers\Project\ProjectInvitationController;
@@ -48,6 +48,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('favorites', [FavoriteController::class, 'index']);
     Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
     Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
+
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread', [NotificationController::class, 'unread']);
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
+    });
 
     // مسارات التصنيفات والحرفيين العامة للمستخدمين
     Route::get('service-categories', [ServiceCategoryController::class, 'index']);
