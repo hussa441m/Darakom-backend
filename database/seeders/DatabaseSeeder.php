@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
     $this->call(RatingSeeder::class);
     $this->call(ComplaintSeeder::class);
     $this->call(NotificationSeeder::class);
-
+    $this->call(ServiceCategorySeeder::class);
 
 }
 }
