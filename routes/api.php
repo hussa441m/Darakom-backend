@@ -16,6 +16,10 @@ use App\Http\Controllers\Interaction\ComplaintController;
 use App\Http\Controllers\Interaction\FavoriteController;
 use App\Http\Controllers\SettingController;
 
+// استيراد متحكمات التصنيفات والحرفيين الجديدة
+use App\Http\Controllers\Service\ServiceCategoryController;
+use App\Http\Controllers\Service\ArtisanServiceController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 // use Illuminate\Support\Facades\URL;
@@ -31,35 +35,41 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/provinces', [SettingController::class, 'provinces']);
 
- Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
 //     Route::get('/documents/{document}/download', [DocumentController::class, 'download']);
 
 //     Route::apiResource('/projects', ProjectController::class);
 
- Route::get('profile', [AuthController::class, 'getProfile']);
- Route::put('profile/update', [AuthController::class, 'updateProfile']);
- Route::post('logout', [AuthController::class, 'logout']);
- Route::post('change-password', [AuthController::class, 'changePassword']);
- Route::get('favorites', [FavoriteController::class, 'index']);
- Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
- Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
+    Route::get('profile', [AuthController::class, 'getProfile']);
+    Route::put('profile/update', [AuthController::class, 'updateProfile']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('change-password', [AuthController::class, 'changePassword']);
+    Route::get('favorites', [FavoriteController::class, 'index']);
+    Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
+    Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
+
+    // مسارات التصنيفات والحرفيين العامة للمستخدمين
+    Route::get('service-categories', [ServiceCategoryController::class, 'index']);
+    Route::get('service-categories/{category}', [ArtisanServiceController::class, 'getProvidersByCategory']);
+    Route::post('provider/service-category/toggle', [ArtisanServiceController::class, 'toggleProviderService']);
 
 //     Route::controller(NotificationController::class)->group(function () {
 //         Route::get('/notifications',  'index');
 //         Route::get('/notifications/unread-count',  'unreadCount');
 //         Route::patch('/notifications/markAsRead',  'markAsRead');
-   });
-   Route::middleware('auth:sanctum')->group(function(){
+//     });
+});
+
+Route::middleware('auth:sanctum')->group(function(){
 
     Route::get('/projects',[ProjectController::class,'index']);
     Route::get('/projects/{project}', [ProjectController::class, 'show']);
     Route::post('/projects', [ProjectController::class, 'store']);
-  Route::put('/projects/{project}', [ProjectController::class, 'update']);
-  Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+    Route::put('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
 
 });
-
 
 Route::prefix('admin')
     ->middleware(['auth:sanctum', 'user.type:admin'])
@@ -68,6 +78,12 @@ Route::prefix('admin')
         Route::get('ratings', [RatingController::class, 'index']);
         Route::get('ratings/{rating}', [RatingController::class, 'adminShow']);
         Route::delete('ratings/{rating}', [RatingController::class, 'adminDestroy']);
+
+        // مسارات إدارة التصنيفات للأدمن
+        Route::get('service-categories/{id}', [ServiceCategoryController::class, 'show']);
+        Route::post('service-categories', [ServiceCategoryController::class, 'store']);
+        Route::put('service-categories/{id}', [ServiceCategoryController::class, 'update']);
+        Route::delete('service-categories/{id}', [ServiceCategoryController::class, 'destroy']);
 
     });
 
@@ -102,27 +118,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/provider/complaints/{complaint}', [ComplaintController::class, 'show']);
     Route::get('/provider/complaints-against-me', [ComplaintController::class, 'complaintsAgainstMe']);
 
-  
+    Route::get('/provider/invitations',[ProjectInvitationController::class, 'index']);
+    Route::get('/provider/invitations/{invitation}',[ProjectInvitationController::class, 'show']);
+    Route::post('/provider/invitations/{invitation}/accept',[ProjectInvitationController::class, 'accept']);
+    Route::post('/provider/invitations/{invitation}/decline',[ProjectInvitationController::class, 'decline']);
+
+    Route::post('/provider/projects/{project}/reports',[ProjectReportController::class, 'store']);
+    Route::get('/provider/projects/{project}/reports', [ProjectReportController::class, 'index']);
+    Route::get('/provider/projects/{project}/reports/{report}',[ProjectReportController::class, 'show']);
+    Route::put('provider/reports/{report}',[ProjectReportController::class, 'update']);
+    Route::delete('provider/reports/{report}', [ProjectReportController::class, 'destroy']);
     
-   Route::get('/provider/invitations',[ProjectInvitationController::class, 'index']);
-   Route::get('/provider/invitations/{invitation}',[ProjectInvitationController::class, 'show']);
-   Route::post('/provider/invitations/{invitation}/accept',[ProjectInvitationController::class, 'accept']);
-   Route::post('/provider/invitations/{invitation}/decline',[ProjectInvitationController::class, 'decline']);
-
-   Route::post('/provider/projects/{project}/reports',[ProjectReportController::class, 'store']);
-   Route::get('/provider/projects/{project}/reports', [ProjectReportController::class, 'index']);
-   Route::get('/provider/projects/{project}/reports/{report}',[ProjectReportController::class, 'show']);
-   Route::put('provider/reports/{report}',[ProjectReportController::class, 'update']);
-   Route::delete('provider/reports/{report}', [ProjectReportController::class, 'destroy']);
-   
     Route::get('provider/ratings',[RatingController::class, 'providerRatings']);
-   Route::get('provider/ratings/{rating}',[RatingController::class, 'providerShow']);
-
-
+    Route::get('provider/ratings/{rating}',[RatingController::class, 'providerShow']);
 
 });
 
-    Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group(function () {
+Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group(function () {
     Route::get('projects',[ClientController::class, 'projects']);
     Route::get('projects/{project}',[ClientController::class, 'show']);
     Route::get('projects/{project}/offers',[ClientController::class, 'getOffers']);
@@ -134,10 +146,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('complaints', [ComplaintController::class, 'myComplaints']);
     Route::post('complaints', [ComplaintController::class, 'store']);
     Route::get('complaints/{complaint}', [ComplaintController::class, 'show']);
-      Route::get('/complaints-against-me', [ComplaintController::class, 'complaintsAgainstMe']);
+    Route::get('/complaints-against-me', [ComplaintController::class, 'complaintsAgainstMe']);
     Route::get('projects/{project}/steps', [StepController::class, 'clientIndex']);
     Route::get('projects/{project}/steps/{step}', [StepController::class, 'clientShow']);
-
 
     Route::post('projects/{project}/invitations',[ProjectInvitationController::class, 'store']);
     Route::delete('invitations/{invitation}',[ProjectInvitationController::class, 'destroy']);
@@ -150,8 +161,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('ratings/{rating}',[RatingController::class, 'destroy']);
     Route::get('ratings/{rating}',[RatingController::class, 'show']);
     Route::get('my-ratings',[RatingController::class, 'myRatings']);
- 
-          });
+});
 
 Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(function () {
     Route::get('/steps', [StepController::class, 'adminIndex']);
@@ -160,11 +170,3 @@ Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(f
     Route::get('/complaints', [ComplaintController::class, 'index']);
     Route::post('/complaints/{complaint}/action', [ComplaintController::class, 'takeAction']);
 });
-//     });
-// });
-
-// Route::fallback(function () {
-//     return apiError("path does not exist !!! 😁", [
-//         'url' => URL::current()
-//     ]);
-// });
