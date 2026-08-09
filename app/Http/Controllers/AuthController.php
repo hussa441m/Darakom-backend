@@ -22,6 +22,7 @@ class AuthController extends Controller
             'last_name'  => 'required|string|max:50',
             'email' => 'required|email|max:100|unique:users',
             'password' => 'required|confirmed|min:6',
+            'phone'      => 'required|string|max:20|unique:users,phone',
             'province_id' => 'required|exists:provinces,id',
             'type' => 'required|in:client,provider',
             'experience_start' => 'required_if:type,provider|date',
