@@ -6,7 +6,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\Project\StepController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\NotificationController;
-// use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\OfferController;
 use App\Http\Controllers\Project\ProjectInvitationController;
@@ -49,6 +49,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
     Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
 
+    Route::get('document-types', [DocumentController::class, 'getTypes']);
+
+    Route::prefix('documents')->group(function () {
+        Route::get('/', [DocumentController::class, 'index']);
+        Route::post('/', [DocumentController::class, 'store']);
+        Route::delete('/{id}', [DocumentController::class, 'destroy']);
+    });
+
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('/unread', [NotificationController::class, 'unread']);
@@ -86,6 +94,14 @@ Route::prefix('admin')
         Route::get('ratings', [RatingController::class, 'index']);
         Route::get('ratings/{rating}', [RatingController::class, 'adminShow']);
         Route::delete('ratings/{rating}', [RatingController::class, 'adminDestroy']);
+
+        Route::get('documents/providers/{profileId}', [DocumentController::class, 'getProviderDocuments']);
+        Route::delete('documents/{id}', [DocumentController::class, 'adminDestroyDocument']);
+
+        Route::get('document-types', [DocumentController::class, 'getTypes']);
+        Route::post('document-types', [DocumentController::class, 'storeDocumentType']);
+        Route::put('document-types/{id}', [DocumentController::class, 'updateDocumentType']);
+        Route::delete('document-types/{id}', [DocumentController::class, 'destroyDocumentType']);
 
         // مسارات إدارة التصنيفات للأدمن
         Route::get('service-categories/{id}', [ServiceCategoryController::class, 'show']);
@@ -163,6 +179,10 @@ Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group
     
     Route::get( 'projects/{project}/reports',[ProjectReportController::class, 'clientIndex'] );
     Route::get('projects/{project}/reports/{report}',[ProjectReportController::class, 'clientShow']);
+
+    Route::get('projects/{project}/documents', [DocumentController::class, 'getProjectDocuments']);
+    Route::post('projects/{project}/documents', [DocumentController::class, 'storeProjectDocument']);
+    Route::delete('documents/{id}', [DocumentController::class, 'destroyProjectDocument']);
 
     Route::post('projects/{project}/ratings', [RatingController::class, 'store']);
     Route::put('ratings/{rating}',[RatingController::class, 'update']);
