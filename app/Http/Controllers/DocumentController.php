@@ -8,7 +8,6 @@ use App\Models\Project;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class DocumentController extends Controller
 {
@@ -35,7 +34,7 @@ class DocumentController extends Controller
                     'document_type_name' => $document->documentType?->name,
                     'description' => $document->description,
                     'path' => $document->path,
-                    'url' => Storage::disk('public')->url($document->path),
+                    'url' => asset('storage/' . $document->path),
                     'created_at' => $document->created_at,
                 ];
             });
@@ -69,12 +68,12 @@ class DocumentController extends Controller
             'document_type_id' => $document->document_type_id,
             'description' => $document->description,
             'path' => $document->path,
-            'url' => Storage::disk('public')->url($document->path),
+            'url' => asset('storage/' . $document->path),
             'created_at' => $document->created_at,
         ]);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id)
     {
         $profile = $request->user()->profile;
         if (! $profile) {
@@ -92,7 +91,7 @@ class DocumentController extends Controller
         return apiSuccess('تم حذف المستند بنجاح');
     }
 
-    public function getProjectDocuments(Request $request, $projectId)
+    public function getProjectDocuments(Request $request, int $projectId)
     {
         $project = Project::find($projectId);
         if (! $project) {
@@ -114,7 +113,7 @@ class DocumentController extends Controller
                     'document_type_name' => $document->documentType?->name,
                     'description' => $document->description,
                     'path' => $document->path,
-                    'url' => Storage::disk('public')->url($document->path),
+                    'url' => asset('storage/' . $document->path),
                     'created_at' => $document->created_at,
                 ];
             });
@@ -122,7 +121,7 @@ class DocumentController extends Controller
         return apiSuccess('تم استرجاع مستندات المشروع بنجاح', $documents);
     }
 
-    public function storeProjectDocument(Request $request, $projectId)
+    public function storeProjectDocument(Request $request, int $projectId)
     {
         $project = Project::find($projectId);
         if (! $project) {
@@ -152,12 +151,12 @@ class DocumentController extends Controller
             'document_type_id' => $document->document_type_id,
             'description' => $document->description,
             'path' => $document->path,
-            'url' => Storage::disk('public')->url($document->path),
+            'url' => asset('storage/' . $document->path),
             'created_at' => $document->created_at,
         ]);
     }
 
-    public function destroyProjectDocument(Request $request, $id)
+    public function destroyProjectDocument(Request $request, int $id)
     {
         $document = Document::find($id);
         if (! $document) {
@@ -179,7 +178,7 @@ class DocumentController extends Controller
         return apiSuccess('تم حذف مستند المشروع بنجاح');
     }
 
-    public function getProviderDocuments($profileId)
+    public function getProviderDocuments(int $profileId)
     {
         $profile = Profile::find($profileId);
         if (! $profile) {
@@ -197,7 +196,7 @@ class DocumentController extends Controller
                     'document_type_name' => $document->documentType?->name,
                     'description' => $document->description,
                     'path' => $document->path,
-                    'url' => Storage::disk('public')->url($document->path),
+                    'url' => asset('storage/' . $document->path),
                     'created_at' => $document->created_at,
                 ];
             });
@@ -205,7 +204,7 @@ class DocumentController extends Controller
         return apiSuccess('تم استرجاع مستندات المزود بنجاح', $documents);
     }
 
-    public function adminDestroyDocument($id)
+    public function adminDestroyDocument(int $id)
     {
         $document = Document::find($id);
         if (! $document) {
@@ -216,52 +215,5 @@ class DocumentController extends Controller
         $document->delete();
 
         return apiSuccess('تم حذف المستند بنجاح');
-    }
-
-    public function storeDocumentType(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|max:50|unique:document_types,name',
-        ]);
-
-        $documentType = DocumentType::create($validated);
-
-        return apiSuccess('تم إضافة نوع المستند بنجاح', $documentType);
-    }
-
-    public function updateDocumentType(Request $request, $id)
-    {
-        $documentType = DocumentType::find($id);
-        if (! $documentType) {
-            return apiError('نوع المستند غير موجود', null, 404);
-        }
-
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'max:50',
-                Rule::unique('document_types', 'name')->ignore($documentType->id),
-            ],
-        ]);
-
-        $documentType->update($validated);
-
-        return apiSuccess('تم تعديل نوع المستند بنجاح', $documentType);
-    }
-
-    public function destroyDocumentType($id)
-    {
-        $documentType = DocumentType::find($id);
-        if (! $documentType) {
-            return apiError('نوع المستند غير موجود', null, 404);
-        }
-
-        if ($documentType->documents()->exists()) {
-            return apiError('لا يمكن حذف نوع المستند لوجود مستندات مرتبطة به', null, 400);
-        }
-
-        $documentType->delete();
-
-        return apiSuccess('تم حذف نوع المستند بنجاح');
     }
 }
