@@ -99,11 +99,21 @@ if (
         }
     }
 }
+if ($request->hasFile('documents')) {
+        foreach ($request->file('documents') as $file) {
+            $path = $file->store('project_documents', 'public');
+            $project->documents()->create([
+                'path' => $path,
+                'description' => $project->title,
+            ]);
+        }
+    }
 
 $project->load([
     'projectType',
     'province',
-    'client'
+    'client',
+    'documents'
 ]);
 
     return apiSuccess( "تم إنشاء المشروع بنجاح", $project);

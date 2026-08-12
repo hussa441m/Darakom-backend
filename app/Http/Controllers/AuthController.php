@@ -17,23 +17,23 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name'  => 'required|string|max:50',
-            'email' => 'required|email|max:100|unique:users',
-            'password' => 'required|confirmed|min:6',
-            'phone'      => 'required|string|max:20|unique:users,phone',
-            'province_id' => 'required|exists:provinces,id',
-            'type' => 'required|in:client,provider',
-            'experience_start' => 'required_if:type,provider|date',
-            'role_id' => 'required_if:type,provider|exists:roles,id',
-            'work_area' => 'required_if:type,provider|string|max:100',
+       $validated = $request->validate([
+    'first_name' => 'required|string|max:50',
+    'last_name'  => 'required|string|max:50',
+    'email' => 'required|email|max:100|unique:users',
+    'password' => 'required|confirmed|min:6',
+    'phone'      => 'required|string|max:20|unique:users,phone',
+    'province_id' => 'required|exists:provinces,id',
+    'type' => 'required|in:client,provider,craftsman',
+    'experience_start' => 'required_if:type,provider|date',
+    'role_id' => 'required_if:type,provider|exists:roles,id',
+    'work_area' => 'required_if:type,provider|string|max:100',
 
-            'documents' => 'nullable|array',
-            'documents.*.file' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
-            'documents.*.type' => 'required|exists:document_types,id',
-            'documents.*.description' => 'nullable|string|max:255',
-        ]);
+    'documents' => 'nullable|array',
+    'documents.*.file' => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
+    'documents.*.type' => 'required_with:documents|exists:document_types,id',
+    'documents.*.description' => 'nullable|string|max:255',
+]);
 
         $validated['status'] = $request->type == 'provider' ? 'pending' : 'active';
 
