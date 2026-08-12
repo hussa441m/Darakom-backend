@@ -72,4 +72,9 @@ class Profile extends Model
     {
        return $this->hasMany( PreviousWork::class);
     }
+
+public function getAverageRatingAttribute()
+{
+    return round($this->user->receivedRatings()->avg('rate') ?? 0, 1);
+}
 }
