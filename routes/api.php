@@ -162,6 +162,10 @@ Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group
     Route::get('projects',[ClientController::class, 'projects']);
     Route::get('projects/{project}',[ClientController::class, 'show']);
     Route::get('projects/{project}/offers',[ClientController::class, 'getOffers']);
+    
+    Route::get('/offers/public', [OfferController::class, 'publicOffers']);
+    Route::get('/offers/private', [OfferController::class, 'privateOffers']);
+    Route::get('/projects/{project}/offers/{offer}', [OfferController::class, 'show']);
     Route::post('projects/{project}/offers/{offer}/accept',[OfferController::class, 'acceptOffer']);
     Route::post('projects/{project}/offers/{offer}/reject',[OfferController::class, 'rejectOffer']);
     Route::post('projects/{project}/rate', [ClientController::class, 'rate']);
