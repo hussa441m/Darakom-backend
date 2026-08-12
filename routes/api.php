@@ -19,7 +19,7 @@ use App\Http\Controllers\SettingController;
 // استيراد متحكمات التصنيفات والحرفيين الجديدة
 use App\Http\Controllers\Service\ServiceCategoryController;
 use App\Http\Controllers\Service\ArtisanServiceController;
-
+use App\Http\Controllers\Admin\DocumentTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 // use Illuminate\Support\Facades\URL;
@@ -98,10 +98,10 @@ Route::prefix('admin')
         Route::get('documents/providers/{profileId}', [DocumentController::class, 'getProviderDocuments']);
         Route::delete('documents/{id}', [DocumentController::class, 'adminDestroyDocument']);
 
-        Route::get('document-types', [DocumentController::class, 'getTypes']);
-        Route::post('document-types', [DocumentController::class, 'storeDocumentType']);
-        Route::put('document-types/{id}', [DocumentController::class, 'updateDocumentType']);
-        Route::delete('document-types/{id}', [DocumentController::class, 'destroyDocumentType']);
+        Route::get('document-types', [DocumentTypeController::class, 'index']);
+        Route::post('document-types', [DocumentTypeController::class, 'store']);
+        Route::put('document-types/{documentType}', [DocumentTypeController::class, 'update']);
+        Route::delete('document-types/{documentType}', [DocumentTypeController::class, 'destroy']);
 
         // مسارات إدارة التصنيفات للأدمن
         Route::get('service-categories/{id}', [ServiceCategoryController::class, 'show']);
