@@ -122,7 +122,7 @@ class DocumentController extends Controller
     }
 
     public function storeProjectDocument(Request $request, int $projectId)
-    {
+    {   
         $project = Project::find($projectId);
         if (! $project) {
             return apiError('المشروع غير موجود', null, 404);
