@@ -8,6 +8,7 @@ class PreviousWorkImage extends Model
 {
     protected $fillable = [
         'path',
+        'is_cover',
         'previous_work_id'
     ];
 
