@@ -21,7 +21,7 @@ return new class extends Migration
            
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();                       
             $table->foreignId('offered_by')->constrained('profiles')->cascadeOnDelete();  
-             
+             $table->date('start_date')->nullable();
             $table->enum('status', ['pending', 'accepted', 'rejected', 'canceled'])->default('pending');
             $table->string('reject_reason', 500)->nullable();   //سبب الرفض                  
 

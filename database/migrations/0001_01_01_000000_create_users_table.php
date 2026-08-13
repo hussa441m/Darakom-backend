@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('email', 100)->unique();
             $table->string('address', 255)->nullable();       
             $table->string('password');
+          
             $table->enum('type', ['admin', 'client', 'provider'])->default('client');
             $table->enum('status', ['pending', 'active', 'closed', 'locked'])->default('pending');
             $table->foreignId('province_id')->constrained()->cascadeOnDelete();

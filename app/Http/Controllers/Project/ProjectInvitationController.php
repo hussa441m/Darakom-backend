@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectInvitation;
 use App\Models\Profile;
+use App\Notifications\ProjectInvitationNotification;
 use Illuminate\Http\Request;
 
 class ProjectInvitationController extends Controller
@@ -40,6 +41,17 @@ public function store(Request $request, Project $project)
         'provider_profile_id' => $validated['provider_profile_id'],
         'expires_at' => $validated['expires_at'] ?? null,
     ]);
+    $profile = Profile::with('user')
+    ->find($validated['provider_profile_id']);
+
+if ($profile && $profile->user) {
+    $profile->user->notify(
+        new ProjectInvitation(
+            $project->id,
+            $invitation->id
+        )
+    );
+}
 
     return apiSuccess('تم إرسال الدعوة بنجاح.', $invitation);
 }

@@ -24,6 +24,7 @@ class User extends Authenticatable
           'email',
           'address',
           'password',
+          'phone',
           'type',       
           'status',      
           'avatar',
@@ -95,6 +96,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Rating::class,'user_id');
     }
+
+    public function offers()
+    {
+        return $this->hasManyThrough(Offer::class, Project::class, 'client_id', 'project_id');
+     }
 
     /**
      * The attributes that should be hidden for serialization.
