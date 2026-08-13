@@ -55,7 +55,6 @@ class ProjectController extends Controller
             'documents.*.type' => 'required|exists:document_types,id',
             'documents.*.description' => 'required|max:255',
         ]);
-        //يجب أن تتحدد أثناء تسجيل الدخول
 
         $validated['customer_id'] = $request->user()->id;
         $project = Project::create($validated);
@@ -75,9 +74,7 @@ class ProjectController extends Controller
         return apiSuccess("تم إضافة المشروع بنجاح", $project);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(Project $project)
     {
 
@@ -91,9 +88,7 @@ class ProjectController extends Controller
         return apiSuccess("بيانات المشروع", $project);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+   
     public function update(Request $request, Project $project)
     {
         $this->authorize('update', $project);
@@ -113,13 +108,10 @@ class ProjectController extends Controller
             'documents.*.description' => 'required|max:255',
         ]);
         $project->update($validated);
-        /** معالجة تعديل الملفات */
         return apiSuccess("تم تعديل المشروع بنجاح", $project);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+   
     public function destroy(Project $project)
     {
         $this->authorize('delete', $project);
