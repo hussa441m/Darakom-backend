@@ -15,73 +15,76 @@ use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-   public function register(Request $request)
-{
-    $validated = $request->validate([
-        'first_name'        => 'required|string|max:50',
-        'last_name'         => 'required|string|max:50',
-        'email'             => 'required|email|max:100|unique:users,email',
-        'password'          => 'required|confirmed|min:6',
-        'phone'             => 'required|string|max:20|unique:users,phone',
-        'province_id'       => 'required|exists:provinces,id',
-        'type'              => 'required|in:client,provider', 
-        'role_id'           => 'required_if:type,provider|nullable|exists:roles,id',
-        'work_area'         => 'required_if:type,provider|nullable|string|max:100',
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name'        => 'required|string|max:50',
+            'last_name'         => 'required|string|max:50',
+            'email'             => 'required|email|max:100|unique:users,email',
+            'password'          => 'required|confirmed|min:6',
+            'phone'             => 'required|string|max:20|unique:users,phone',
+            'province_id'       => 'required|exists:provinces,id',
+            'type'              => 'required|in:client,provider', 
+            'role_id'           => 'required_if:type,provider|nullable|exists:roles,id',
+            'work_area'         => 'required_if:type,provider|nullable|string|max:100',
+            'bio'               => 'nullable|string|max:1000', // إضافة التحقق من الـ bio هنا
 
-        'documents'               => 'nullable|array',
-        'documents.*.file'        => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
-        'documents.*.type'        => 'required_with:documents|exists:document_types,id',
-        'documents.*.description' => 'nullable|string|max:255',
-    ]);
-
-    $status = $request->type === 'provider' ? 'pending' : 'active';
-
-    $user = User::create([
-        'first_name'  => $validated['first_name'],
-        'last_name'   => $validated['last_name'],
-        'email'       => $validated['email'],
-        'password'    => $validated['password'], 
-        'phone'       => $validated['phone'],
-        'type'        => $validated['type'],
-        'status'      => $status,
-        'province_id' => $validated['province_id'],
-    ]);
-
-    if ($user->type === 'provider') {
-        $profile = $user->profile()->create([
-            'work_area' => $validated['work_area'],
-            'role_id'   => $validated['role_id'],
+            'documents'               => 'nullable|array',
+            'documents.*.file'        => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
+            'documents.*.type'        => 'required_with:documents|exists:document_types,id',
+            'documents.*.description' => 'nullable|string|max:255',
         ]);
 
-        if ($request->hasFile('documents')) {
-            foreach ($request->file('documents') as $index => $documentData) {
-                if (isset($documentData['file']) && $documentData['file']->isValid()) {
-                    $path = $documentData['file']->store('documents', 'public');
+        $status = $request->type === 'provider' ? 'pending' : 'active';
 
-                    $type = $request->input("documents.{$index}.type");
-                    $description = $request->input("documents.{$index}.description");
+        $user = User::create([
+            'first_name'  => $validated['first_name'],
+            'last_name'   => $validated['last_name'],
+            'email'       => $validated['email'],
+            'password'    => $validated['password'], 
+            'phone'       => $validated['phone'],
+            'type'        => $validated['type'],
+            'status'      => $status,
+            'province_id' => $validated['province_id'],
+        ]);
 
-                    $profile->documents()->create([
-                        'path'             => $path,
-                        'description'      => $description,
-                        'document_type_id' => $type,
-                    ]);
+        if ($user->type === 'provider') {
+            $profile = $user->profile()->create([
+                'work_area' => $validated['work_area'],
+                'role_id'   => $validated['role_id'],
+                'bio'       => $validated['bio'] ?? null, // تخزين الـ bio في البروفايل
+            ]);
+
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $index => $documentData) {
+                    if (isset($documentData['file']) && $documentData['file']->isValid()) {
+                        $path = $documentData['file']->store('documents', 'public');
+
+                        $type = $request->input("documents.{$index}.type");
+                        $description = $request->input("documents.{$index}.description");
+
+                        $profile->documents()->create([
+                            'path'             => $path,
+                            'description'      => $description,
+                            'document_type_id' => $type,
+                        ]);
+                    }
                 }
             }
         }
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return apiSuccess(
+            'تم إنشاء الحساب بنجاح',
+            [
+                'type'  => $user->type,
+                'name'  => $user->full_name,
+                'token' => $token,
+            ]
+        );
     }
 
-    $token = $user->createToken('mobile')->plainTextToken;
-
-    return apiSuccess(
-        'تم إنشاء الحساب بنجاح',
-        [
-            'type'  => $user->type,
-            'name'  => $user->full_name,
-            'token' => $token,
-        ]
-    );
-}
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -198,7 +201,6 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-  
         $rules = [
             'first_name'  => 'required|string|max:50',
             'last_name'   => 'required|string|max:50',
@@ -209,10 +211,10 @@ class AuthController extends Controller
         ];
 
         if ($user->type === 'provider') {
-            $rules['experience_start'] = 'required|date';
+            $rules['experience_start'] = 'nullable|date'; // تم توحيده ليكون nullable مطابقاً للمعيار الجديد
             $rules['role_id']          = 'required|exists:roles,id';
             $rules['work_area']        = 'required|string|max:100';
-            $rules['bio']              = 'nullable|string';
+            $rules['bio']              = 'nullable|string|max:1000';
             $rules['syndicate_number'] = 'nullable|string|max:50';
         }
 
@@ -229,7 +231,7 @@ class AuthController extends Controller
 
         if ($user->type === 'provider' && $user->profile) {
             $user->profile->update([
-                'experience_start' => $validated['experience_start'],
+                'experience_start' => $validated['experience_start'] ?? $user->profile->experience_start,
                 'role_id'          => $validated['role_id'],
                 'work_area'        => $validated['work_area'],
                 'bio'              => $validated['bio'] ?? $user->profile->bio,
