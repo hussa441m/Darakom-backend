@@ -56,8 +56,6 @@ return new class extends Migration
         
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
-
-            // تم تعديل هذا السطر ليصبح اختياري وقابل للـ NULL
             $table->date('experience_start')->nullable();
             $table->integer('experience_years')->default(0);
 
