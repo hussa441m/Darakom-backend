@@ -17,42 +17,43 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-       $validated = $request->validate([
-    'first_name' => 'required|string|max:50',
-    'last_name'  => 'required|string|max:50',
-    'email' => 'required|email|max:100|unique:users',
-    'password' => 'required|confirmed|min:6',
-    'phone'      => 'required|string|max:20|unique:users,phone',
-    'province_id' => 'required|exists:provinces,id',
-    'type' => 'required|in:client,provider,craftsman',
-    'experience_start' => 'required_if:type,provider|date',
-    'role_id' => 'required_if:type,provider|exists:roles,id',
-    'work_area' => 'required_if:type,provider|string|max:100',
+        $validated = $request->validate([
+            'first_name'        => 'required|string|max:50',
+            'last_name'         => 'required|string|max:50',
+            'email'             => 'required|email|max:100|unique:users,email',
+            'password'          => 'required|confirmed|min:6',
+            'phone'             => 'required|string|max:20|unique:users,phone',
+            'province_id'       => 'required|exists:provinces,id',
+            'type'              => 'required|in:client,provider', 
+            'experience_start'  => 'required_if:type,provider|nullable|date',
+            'role_id'           => 'required_if:type,provider|nullable|exists:roles,id',
+            'work_area'         => 'required_if:type,provider|nullable|string|max:100',
 
-    'documents' => 'nullable|array',
-    'documents.*.file' => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
-    'documents.*.type' => 'required_with:documents|exists:document_types,id',
-    'documents.*.description' => 'nullable|string|max:255',
-]);
+            'documents'               => 'nullable|array',
+            'documents.*.file'        => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
+            'documents.*.type'        => 'required_with:documents|exists:document_types,id',
+            'documents.*.description' => 'nullable|string|max:255',
+        ]);
 
-        $validated['status'] = $request->type == 'provider' ? 'pending' : 'active';
+        $status = $request->type === 'provider' ? 'pending' : 'active';
 
+       
         $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'phone' => $validated['phone'],
-            'type' => $validated['type'],
-            'status' => $validated['status'],
+            'first_name'  => $validated['first_name'],
+            'last_name'   => $validated['last_name'],
+            'email'       => $validated['email'],
+            'password'    => $validated['password'], 
+            'phone'       => $validated['phone'],
+            'type'        => $validated['type'],
+            'status'      => $status,
             'province_id' => $validated['province_id'],
         ]);
 
         if ($user->type === 'provider') {
             $profile = $user->profile()->create([
                 'experience_start' => $validated['experience_start'],
-                'work_area' => $validated['work_area'],
-                'role_id' => $validated['role_id'],
+                'work_area'        => $validated['work_area'],
+                'role_id'          => $validated['role_id'],
             ]);
 
             if ($request->hasFile('documents')) {
@@ -64,8 +65,8 @@ class AuthController extends Controller
                         $description = $request->input("documents.{$index}.description");
 
                         $profile->documents()->create([
-                            'path' => $path,
-                            'description' => $description,
+                            'path'             => $path,
+                            'description'      => $description,
                             'document_type_id' => $type,
                         ]);
                     }
@@ -78,17 +79,17 @@ class AuthController extends Controller
         return apiSuccess(
             'تم إنشاء الحساب بنجاح',
             [
-                'type' => $user->type,
-                'name' => $user->full_name,
+                'type'  => $user->type,
+                'name'  => $user->full_name,
                 'token' => $token,
             ]
         );
     }
 
-       public function login(Request $request)
-       {
+    public function login(Request $request)
+    {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
@@ -117,12 +118,12 @@ class AuthController extends Controller
         $token = $user->createToken('mobile')->plainTextToken;
 
         return apiSuccess("تم تسجيل الدخول بنجاح", [
-            'id' => $user->id,
-            'name' => $user->full_name,
-            'email' => $user->email,
-            'type' => $user->type,
+            'id'     => $user->id,
+            'name'   => $user->full_name,
+            'email'  => $user->email,
+            'type'   => $user->type,
             'status' => $user->status,
-            'token' => $token
+            'token'  => $token
         ]);
     }
 
@@ -137,8 +138,8 @@ class AuthController extends Controller
 
         DB::table('password_reset_tokens')->where('email', $email)->delete();
         DB::table('password_reset_tokens')->insert([
-            'email' => $email,
-            'token' => $otp,
+            'email'      => $email,
+            'token'      => $otp,
             'created_at' => Carbon::now(),
         ]);
 
@@ -153,8 +154,8 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'otp' => 'required|digits:6',
+            'email'    => 'required|email|exists:users,email',
+            'otp'      => 'required|digits:6',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -174,7 +175,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $validated['email'])->first();
-        $user->password = Hash::make($validated['password']);
+        $user->password = $validated['password'];
         $user->save();
 
         DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
@@ -182,91 +183,73 @@ class AuthController extends Controller
         return apiSuccess('تم تغيير كلمة المرور بنجاح');
     }
 
-
     public function getProfile(Request $request)
     {
-       $user = $request->user()->load([
-        'province',
-       'profile.role',
-       'profile.documents',
-       'profile.qualifications',
-     ]);
+        $user = $request->user()->load([
+            'province',
+            'profile.role',
+            'profile.documents',
+            'profile.qualifications',
+        ]);
 
-    return apiSuccess(
-        'تم جلب بيانات الحساب بنجاح',
-        new UserResource($user)
-    );
+        return apiSuccess(
+            'تم جلب بيانات الحساب بنجاح',
+            new UserResource($user)
+        );
     } 
 
     public function updateProfile(Request $request)
     {
-    $user = $request->user();
+        $user = $request->user();
 
-       $validated = $request->validate([
-    'first_name' => 'required|string|max:50',
-    'last_name'  => 'required|string|max:50',
-    'phone' => [
-    'required',
-    'string',
-    'max:20',
-    Rule::unique('users', 'phone')->ignore($user->id, 'id'),
-],
-    'email' => [
-        'required',
-        'email',
-        'max:100',
-        Rule::unique('users', 'email')->ignore($user->id, 'id'),
-    ],
-    'province_id' => 'required|exists:provinces,id',
+  
+        $rules = [
+            'first_name'  => 'required|string|max:50',
+            'last_name'   => 'required|string|max:50',
+            'phone'       => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'email'       => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id)],
+            'province_id' => 'required|exists:provinces,id',
+            'address'     => 'nullable|string|max:255',
+        ];
 
- 'address'    => 'nullable|string|max:255',
-       // 'province_id' => 'required|exists:provinces,id',
+        if ($user->type === 'provider') {
+            $rules['experience_start'] = 'required|date';
+            $rules['role_id']          = 'required|exists:roles,id';
+            $rules['work_area']        = 'required|string|max:100';
+            $rules['bio']              = 'nullable|string';
+            $rules['syndicate_number'] = 'nullable|string|max:50';
+        }
 
-        'experience_start' => $user->type === 'provider'
-        ? 'required|date'
-        : 'nullable',
+        $validated = $request->validate($rules);
 
-        'role_id' => $user->type === 'provider'
-        ? 'required|exists:roles,id'
-        : 'nullable',
-
-        'work_area' => $user->type === 'provider'
-        ? 'required|string|max:100'
-        : 'nullable|string|max:100',
-        'bio'              => 'nullable|string',
-        'syndicate_number' => 'nullable|string|max:50',
-    ]);
-
-   $user->update([
-    'first_name' => $validated['first_name'],
-    'last_name'  => $validated['last_name'],
-    'email'      => $validated['email'],
-    'phone'      => $validated['phone'],
-    'address'    => $validated['address'] ?? $user->address,
-    'province_id' => $validated['province_id'],
-]);
-
-    if ($user->type === 'provider' && $user->profile) {
-
-        $user->profile->update([
-            'experience_start' => $validated['experience_start'],
-            'role_id'          => $validated['role_id'],
-            'work_area'        => $validated['work_area'],
-            'bio'              => $validated['bio'] ?? $user->profile->bio,
-            'syndicate_number' => $validated['syndicate_number'] ?? $user->profile->syndicate_number,
+        $user->update([
+            'first_name'  => $validated['first_name'],
+            'last_name'   => $validated['last_name'],
+            'email'       => $validated['email'],
+            'phone'       => $validated['phone'],
+            'address'     => $validated['address'] ?? $user->address,
+            'province_id' => $validated['province_id'],
         ]);
+
+        if ($user->type === 'provider' && $user->profile) {
+            $user->profile->update([
+                'experience_start' => $validated['experience_start'],
+                'role_id'          => $validated['role_id'],
+                'work_area'        => $validated['work_area'],
+                'bio'              => $validated['bio'] ?? $user->profile->bio,
+                'syndicate_number' => $validated['syndicate_number'] ?? $user->profile->syndicate_number,
+            ]);
+        }
+
+        $user->load([
+            'province',
+            'profile.role',
+            'profile.documents',
+            'profile.qualifications',
+        ]);
+
+        return apiSuccess('تم تعديل الحساب بنجاح', new UserResource($user));
     }
-
-    $user->load([
-         'province',
-        'profile.role',
-        'profile.documents',
-        'profile.qualifications',
-    ]);
-
-    return apiSuccess('تم تعديل الحساب بنجاح',new UserResource($user) );
-  }
-
 
     public function logout(Request $request)
     {
@@ -281,17 +264,16 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'current_password' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
+            'password'         => 'required|string|min:6|confirmed',
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password)) {
             return apiError('كلمة المرور الحالية غير صحيحة', null, 422);
         }
 
-        $user->password = Hash::make($validated['password']);
+        $user->password = $validated['password'];
         $user->save();
 
         return apiSuccess('تم تغيير كلمة المرور بنجاح');
     }
 }
-    
