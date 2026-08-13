@@ -204,6 +204,12 @@ class AuthController extends Controller
        $validated = $request->validate([
     'first_name' => 'required|string|max:50',
     'last_name'  => 'required|string|max:50',
+    'phone' => [
+    'required',
+    'string',
+    'max:20',
+    Rule::unique('users', 'phone')->ignore($user->id, 'id'),
+],
     'email' => [
         'required',
         'email',
@@ -230,13 +236,14 @@ class AuthController extends Controller
         'syndicate_number' => 'nullable|string|max:50',
     ]);
 
-    $user->update([
-        'first_name' => $validated['first_name'],
-        'last_name'  => $validated['last_name'],
-        'email'      => $validated['email'],
-        'address'    => $validated['address'] ?? $user->address,
-        'province_id' => $validated['province_id'],
-    ]);
+   $user->update([
+    'first_name' => $validated['first_name'],
+    'last_name'  => $validated['last_name'],
+    'email'      => $validated['email'],
+    'phone'      => $validated['phone'],
+    'address'    => $validated['address'] ?? $user->address,
+    'province_id' => $validated['province_id'],
+]);
 
     if ($user->type === 'provider' && $user->profile) {
 
