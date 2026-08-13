@@ -25,9 +25,7 @@ class ProfileResource extends JsonResource
             'experience_years' => $this->experience_years,
             'syndicate_number' => $this->syndicate_number,
             'logo' => $this->logo,
-
-            // استخدام whenLoaded لمنع مشكلة الاستعلامات المتكررة N+1
-            'qualifications' => $this->whenLoaded('qualifications', function () {
+           'qualifications' => $this->whenLoaded('qualifications', function () {
                 return $this->qualifications->map(function ($qualification) {
                     return [
                         'id' => $qualification->id,
