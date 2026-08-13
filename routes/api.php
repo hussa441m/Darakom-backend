@@ -25,6 +25,7 @@ use App\Http\Controllers\Portfolio\PreviousWorkImageController;
 use App\Http\Controllers\Admin\ProjectTypeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ContactTypeController;
+use App\Http\Controllers\Admin\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -161,12 +162,21 @@ Route::prefix('admin')
 
 
 
-        // مسارات إدارة أنواع جهات الاتصال للأدمن
         Route::post('contact-types', [ContactTypeController::class, 'store']);
         Route::put('contact-types/{contactType}', [ContactTypeController::class, 'update']);
         Route::delete('contact-types/{contactType}', [ContactTypeController::class, 'destroy']);
 
-        // مسارات إدارة التصنيفات للأدمن
+
+
+
+        Route::get('profiles', [ProfileController::class, 'index']);
+        Route::get('profiles/{profile}', [ProfileController::class, 'show']);
+        Route::put('profiles/{profile}', [ProfileController::class, 'update']);
+        Route::delete('profiles/{profile}', [ProfileController::class, 'destroy']);
+
+
+
+
         Route::post('service-categories', [ServiceCategoryController::class, 'store']);
         Route::put('service-categories/{id}', [ServiceCategoryController::class, 'update']);
         Route::delete('service-categories/{id}', [ServiceCategoryController::class, 'destroy']);
