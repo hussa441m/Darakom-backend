@@ -24,6 +24,7 @@ use App\Http\Controllers\Portfolio\PreviousWorkController;
 use App\Http\Controllers\Portfolio\PreviousWorkImageController;
 use App\Http\Controllers\Admin\ProjectTypeController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ContactTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -54,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
 
     Route::get('document-types', [DocumentController::class, 'getTypes']);
+    Route::get('contact-types', [ContactTypeController::class, 'index']);
+    Route::get('contact-types/{contactType}', [ContactTypeController::class, 'show']);
 
     Route::prefix('documents')->group(function () {
         Route::get('/', [DocumentController::class, 'index']);
@@ -157,7 +160,13 @@ Route::prefix('admin')
 
 
 
-        Route::get('service-categories/{id}', [ServiceCategoryController::class, 'show']);
+
+        // مسارات إدارة أنواع جهات الاتصال للأدمن
+        Route::post('contact-types', [ContactTypeController::class, 'store']);
+        Route::put('contact-types/{contactType}', [ContactTypeController::class, 'update']);
+        Route::delete('contact-types/{contactType}', [ContactTypeController::class, 'destroy']);
+
+        // مسارات إدارة التصنيفات للأدمن
         Route::post('service-categories', [ServiceCategoryController::class, 'store']);
         Route::put('service-categories/{id}', [ServiceCategoryController::class, 'update']);
         Route::delete('service-categories/{id}', [ServiceCategoryController::class, 'destroy']);
