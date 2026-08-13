@@ -16,12 +16,10 @@ return new class extends Migration
             $table->string('name', 50)->unique();
         });
 
-        
-
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-           $table->string('first_name',50);
-           $table->string('last_name',50);  
+            $table->string('first_name', 50);
+            $table->string('last_name', 50);  
 
             $table->string('email', 100)->unique();
             $table->string('address', 255)->nullable();       
@@ -31,15 +29,15 @@ return new class extends Migration
             $table->enum('status', ['pending', 'active', 'closed', 'locked'])->default('pending');
             $table->foreignId('province_id')->constrained()->cascadeOnDelete();
             $table->string('avatar')->nullable();
-            $table->string('fcm_token')->nullable(); //'رمز الجهاز لإرسال الإشعارات اللحظية
-            $table->boolean('is_notifications_enabled')->default(true) ; //'حالة تفعيل الإشعارات من واجهة الإعدادات'
+            $table->string('fcm_token')->nullable(); // رمز الجهاز لإرسال الإشعارات اللحظية
+            $table->boolean('is_notifications_enabled')->default(true); // حالة تفعيل الإشعارات
             $table->timestamps();
         });
 
         Schema::create('account_log', function (Blueprint $table) {
             $table->id();
-            $table->json('details'); //reject cause
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();;
+            $table->json('details');
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
 
@@ -59,7 +57,8 @@ return new class extends Migration
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
 
-            $table->date('experience_start');
+            // تم تعديل هذا السطر ليصبح اختياري وقابل للـ NULL
+            $table->date('experience_start')->nullable();
             $table->integer('experience_years')->default(0);
 
             $table->string('work_area', 100);
@@ -83,7 +82,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -105,10 +103,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('qualifications');
+        Schema::dropIfExists('profiles');
         Schema::dropIfExists('contacts');
         Schema::dropIfExists('contact_types');
-        Schema::dropIfExists('profiles');
-        Schema::dropIfExists('qualifications');
         Schema::dropIfExists('account_log');
         Schema::dropIfExists('users');
         Schema::dropIfExists('roles');

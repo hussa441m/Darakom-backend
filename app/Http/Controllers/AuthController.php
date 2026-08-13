@@ -15,77 +15,73 @@ use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'first_name'        => 'required|string|max:50',
-            'last_name'         => 'required|string|max:50',
-            'email'             => 'required|email|max:100|unique:users,email',
-            'password'          => 'required|confirmed|min:6',
-            'phone'             => 'required|string|max:20|unique:users,phone',
-            'province_id'       => 'required|exists:provinces,id',
-            'type'              => 'required|in:client,provider', 
-            'experience_start'  => 'required_if:type,provider|nullable|date',
-            'role_id'           => 'required_if:type,provider|nullable|exists:roles,id',
-            'work_area'         => 'required_if:type,provider|nullable|string|max:100',
+   public function register(Request $request)
+{
+    $validated = $request->validate([
+        'first_name'        => 'required|string|max:50',
+        'last_name'         => 'required|string|max:50',
+        'email'             => 'required|email|max:100|unique:users,email',
+        'password'          => 'required|confirmed|min:6',
+        'phone'             => 'required|string|max:20|unique:users,phone',
+        'province_id'       => 'required|exists:provinces,id',
+        'type'              => 'required|in:client,provider', 
+        'role_id'           => 'required_if:type,provider|nullable|exists:roles,id',
+        'work_area'         => 'required_if:type,provider|nullable|string|max:100',
 
-            'documents'               => 'nullable|array',
-            'documents.*.file'        => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
-            'documents.*.type'        => 'required_with:documents|exists:document_types,id',
-            'documents.*.description' => 'nullable|string|max:255',
+        'documents'               => 'nullable|array',
+        'documents.*.file'        => 'required_with:documents|file|mimes:pdf,jpg,jpeg,png,webp|max:50000',
+        'documents.*.type'        => 'required_with:documents|exists:document_types,id',
+        'documents.*.description' => 'nullable|string|max:255',
+    ]);
+
+    $status = $request->type === 'provider' ? 'pending' : 'active';
+
+    $user = User::create([
+        'first_name'  => $validated['first_name'],
+        'last_name'   => $validated['last_name'],
+        'email'       => $validated['email'],
+        'password'    => $validated['password'], 
+        'phone'       => $validated['phone'],
+        'type'        => $validated['type'],
+        'status'      => $status,
+        'province_id' => $validated['province_id'],
+    ]);
+
+    if ($user->type === 'provider') {
+        $profile = $user->profile()->create([
+            'work_area' => $validated['work_area'],
+            'role_id'   => $validated['role_id'],
         ]);
 
-        $status = $request->type === 'provider' ? 'pending' : 'active';
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $documentData) {
+                if (isset($documentData['file']) && $documentData['file']->isValid()) {
+                    $path = $documentData['file']->store('documents', 'public');
 
-       
-        $user = User::create([
-            'first_name'  => $validated['first_name'],
-            'last_name'   => $validated['last_name'],
-            'email'       => $validated['email'],
-            'password'    => $validated['password'], 
-            'phone'       => $validated['phone'],
-            'type'        => $validated['type'],
-            'status'      => $status,
-            'province_id' => $validated['province_id'],
-        ]);
+                    $type = $request->input("documents.{$index}.type");
+                    $description = $request->input("documents.{$index}.description");
 
-        if ($user->type === 'provider') {
-            $profile = $user->profile()->create([
-                'experience_start' => $validated['experience_start'],
-                'work_area'        => $validated['work_area'],
-                'role_id'          => $validated['role_id'],
-            ]);
-
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $index => $documentData) {
-                    if (isset($documentData['file']) && $documentData['file']->isValid()) {
-                        $path = $documentData['file']->store('documents', 'public');
-
-                        $type = $request->input("documents.{$index}.type");
-                        $description = $request->input("documents.{$index}.description");
-
-                        $profile->documents()->create([
-                            'path'             => $path,
-                            'description'      => $description,
-                            'document_type_id' => $type,
-                        ]);
-                    }
+                    $profile->documents()->create([
+                        'path'             => $path,
+                        'description'      => $description,
+                        'document_type_id' => $type,
+                    ]);
                 }
             }
         }
-
-        $token = $user->createToken('mobile')->plainTextToken;
-
-        return apiSuccess(
-            'تم إنشاء الحساب بنجاح',
-            [
-                'type'  => $user->type,
-                'name'  => $user->full_name,
-                'token' => $token,
-            ]
-        );
     }
 
+    $token = $user->createToken('mobile')->plainTextToken;
+
+    return apiSuccess(
+        'تم إنشاء الحساب بنجاح',
+        [
+            'type'  => $user->type,
+            'name'  => $user->full_name,
+            'token' => $token,
+        ]
+    );
+}
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
