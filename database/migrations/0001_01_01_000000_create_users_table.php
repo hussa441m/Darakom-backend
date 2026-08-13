@@ -59,7 +59,8 @@ return new class extends Migration
             $table->date('experience_start')->nullable();
             $table->integer('experience_years')->default(0);
 
-            $table->string('work_area', 100);
+            $table->string('work_area', 100)->nullable();
+            $table->foreignId('role_id')->nullable()->constrained();
             $table->text('bio')->nullable();
 
             $table->string('syndicate_number', 50)->nullable()->unique();
@@ -67,7 +68,7 @@ return new class extends Migration
 
             $table->string('admin_comment', 1000)->nullable();
             $table->foreignId('user_id')->unique()->constrained();
-            $table->foreignId('role_id')->constrained();
+           
             
             $table->timestamps();
         });
