@@ -16,13 +16,16 @@ use App\Http\Controllers\Interaction\ComplaintController;
 use App\Http\Controllers\Interaction\FavoriteController;
 use App\Http\Controllers\SettingController;
 
-// استيراد متحكمات التصنيفات والحرفيين الجديدة
 use App\Http\Controllers\Service\ServiceCategoryController;
 use App\Http\Controllers\Service\ArtisanServiceController;
 use App\Http\Controllers\Admin\DocumentTypeController;
+
+use App\Http\Controllers\Portfolio\PreviousWorkController;
+use App\Http\Controllers\Portfolio\PreviousWorkImageController;
+use App\Http\Controllers\Admin\ProjectTypeController;
+use App\Http\Controllers\Admin\RoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-// use Illuminate\Support\Facades\URL;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -35,11 +38,12 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/provinces', [SettingController::class, 'provinces']);
 
+Route::get('portfolio/previous-works/{id}', [PreviousWorkController::class, 'show']);
+Route::get('portfolio/profiles/{profileId}/previous-works', [PreviousWorkController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
 
-//     Route::get('/documents/{document}/download', [DocumentController::class, 'download']);
 
-//     Route::apiResource('/projects', ProjectController::class);
 
     Route::get('profile', [AuthController::class, 'getProfile']);
     Route::put('profile/update', [AuthController::class, 'updateProfile']);
@@ -65,16 +69,43 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
 
-    // مسارات التصنيفات والحرفيين العامة للمستخدمين
+
+
+
+
+    Route::prefix('portfolio')->group(function () {
+
+
+
+        Route::get('previous-works', [PreviousWorkController::class, 'index']);
+        Route::post('previous-works', [PreviousWorkController::class, 'store']);
+        Route::put('previous-works/{id}', [PreviousWorkController::class, 'update']);
+        Route::delete('previous-works/{id}', [PreviousWorkController::class, 'destroy']);
+
+
+
+
+
+        Route::post('previous-works/{previousWorkId}/images', [PreviousWorkImageController::class, 'store']);
+        Route::delete('images/{imageId}', [PreviousWorkImageController::class, 'destroy']);
+        Route::patch('images/{imageId}/set-cover', [PreviousWorkImageController::class, 'setCover']);
+    });
+
+
+
+
+
     Route::get('service-categories', [ServiceCategoryController::class, 'index']);
     Route::get('service-categories/{category}', [ArtisanServiceController::class, 'getProvidersByCategory']);
     Route::post('provider/service-category/toggle', [ArtisanServiceController::class, 'toggleProviderService']);
 
-//     Route::controller(NotificationController::class)->group(function () {
-//         Route::get('/notifications',  'index');
-//         Route::get('/notifications/unread-count',  'unreadCount');
-//         Route::patch('/notifications/markAsRead',  'markAsRead');
-//     });
+
+
+
+
+
+
+
 });
 
 Route::middleware('auth:sanctum')->group(function(){
@@ -103,7 +134,29 @@ Route::prefix('admin')
         Route::put('document-types/{documentType}', [DocumentTypeController::class, 'update']);
         Route::delete('document-types/{documentType}', [DocumentTypeController::class, 'destroy']);
 
-        // مسارات إدارة التصنيفات للأدمن
+
+
+
+
+
+        Route::get('project-types', [ProjectTypeController::class, 'index']);
+        Route::post('project-types', [ProjectTypeController::class, 'store']);
+        Route::get('project-types/{projectType}', [ProjectTypeController::class, 'show']);
+        Route::put('project-types/{projectType}', [ProjectTypeController::class, 'update']);
+        Route::delete('project-types/{projectType}', [ProjectTypeController::class, 'destroy']);
+
+
+
+
+        Route::get('roles', [RoleController::class, 'index']);
+        Route::post('roles', [RoleController::class, 'store']);
+        Route::get('roles/{role}', [RoleController::class, 'show']);
+        Route::put('roles/{role}', [RoleController::class, 'update']);
+        Route::delete('roles/{role}', [RoleController::class, 'destroy']);
+
+
+
+
         Route::get('service-categories/{id}', [ServiceCategoryController::class, 'show']);
         Route::post('service-categories', [ServiceCategoryController::class, 'store']);
         Route::put('service-categories/{id}', [ServiceCategoryController::class, 'update']);
@@ -111,9 +164,10 @@ Route::prefix('admin')
 
     });
 
-//     Route::get('getClients/{role}', [CustomerController::class, 'getClients']);
-//     Route::get('getSteps/{project}', [ProjectController::class, 'getSteps']);
 
+
+
+    
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/provider/dashboard', [ProviderController::class, 'dashboard']);
