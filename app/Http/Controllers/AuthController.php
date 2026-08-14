@@ -100,64 +100,66 @@ class AuthController extends Controller
         );
     } 
 
-    public function updateProfile(Request $request)
-    {
-        $user = $request->user();
+  public function updateProfile(Request $request)
+{
+    $user = $request->user();
 
-        $rules = [
-            'first_name'  => 'required|string|max:50',
-            'last_name'   => 'required|string|max:50',
-            'phone'       => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
-            'email'       => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id)],
-            'province_id' => 'required|exists:provinces,id',
-            'address'     => 'nullable|string|max:255',
-            'bio'         => 'nullable|string|max:1000', // قابل للتحديث من الجميع
-        ];
+    $rules = [
+        'first_name'  => 'required|string|max:50',
+        'last_name'   => 'required|string|max:50',
+        'phone'       => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+        'email'       => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id)],
+        'province_id' => 'required|exists:provinces,id',
+        'address'     => 'nullable|string|max:255',
+        'bio'         => 'nullable|string|max:1000',
+    ];
 
-        if ($user->type === 'provider') {
-            $rules['experience_start'] = 'nullable|date';
-            $rules['role_id']          = 'required|exists:roles,id';
-            $rules['work_area']        = 'required|string|max:100';
-            $rules['syndicate_number'] = 'nullable|string|max:50';
-        }
+    if ($user->type === 'provider') {
+        $rules['role_id']          = 'required|exists:roles,id';
+        $rules['work_area']        = 'required|string|max:100';
+        $rules['syndicate_number'] = 'nullable|string|max:50';
+    }
 
-        $validated = $request->validate($rules);
+    $validated = $request->validate($rules);
 
-        $user->update([
-            'first_name'  => $validated['first_name'],
-            'last_name'   => $validated['last_name'],
-            'email'       => $validated['email'],
-            'phone'       => $validated['phone'],
-            'address'     => $validated['address'] ?? $user->address,
-            'province_id' => $validated['province_id'],
-        ]);
+    $user->update([
+        'first_name'  => $validated['first_name'],
+        'last_name'   => $validated['last_name'],
+        'email'       => $validated['email'],
+        'phone'       => $validated['phone'],
+        'address'     => $validated['address'] ?? $user->address,
+        'province_id' => $validated['province_id'],
+    ]);
 
-        // تحديث أو إنشاء سجل البروفايل في حال لم يكن موجوداً
-        $profileData = [
-            'bio' => $validated['bio'] ?? $user->profile?->bio,
-        ];
+    // تجهيز بيانات البروفايل
+    $profileData = [];
 
-        if ($user->type === 'provider') {
-            $profileData['experience_start'] = $validated['experience_start'] ?? $user->profile?->experience_start;
-            $profileData['role_id']          = $validated['role_id'] ?? $user->profile?->role_id;
-            $profileData['work_area']        = $validated['work_area'] ?? $user->profile?->work_area;
-            $profileData['syndicate_number'] = $validated['syndicate_number'] ?? $user->profile?->syndicate_number;
-        }
+    if (array_key_exists('bio', $validated)) {
+        $profileData['bio'] = $validated['bio'];
+    }
 
+    if ($user->type === 'provider') {
+        $profileData['role_id']          = $validated['role_id'] ?? $user->profile?->role_id;
+        $profileData['work_area']        = $validated['work_area'] ?? $user->profile?->work_area;
+        $profileData['syndicate_number'] = $validated['syndicate_number'] ?? $user->profile?->syndicate_number;
+    }
+
+    if (!empty($profileData)) {
         $user->profile()->updateOrCreate(
             ['user_id' => $user->id],
             $profileData
         );
-
-        $user->load([
-            'province',
-            'profile.role',
-            'profile.documents',
-            'profile.qualifications',
-        ]);
-
-        return apiSuccess('تم تعديل الحساب بنجاح', new UserResource($user));
     }
+
+    $user->load([
+        'province',
+        'profile.role',
+        'profile.documents',
+        'profile.qualifications',
+    ]);
+
+    return apiSuccess('تم تعديل الحساب بنجاح', new UserResource($user));
+}
 
     public function login(Request $request)
     {
