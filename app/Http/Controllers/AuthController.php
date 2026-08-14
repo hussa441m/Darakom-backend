@@ -56,8 +56,8 @@ class AuthController extends Controller
         ]);
 
         // إضافة المستندات إن وجدت لمزودي الخدمات
-        if ($user->type === 'provider' && $request->hasFile('documents')) {
-            foreach ($request->file('documents') as $index => $documentData) {
+       if ($user->type === 'provider' && $request->has('documents')) {
+        foreach ($request->file('documents') as $index => $documentData) {
                 if (isset($documentData['file']) && $documentData['file']->isValid()) {
                     $path = $documentData['file']->store('documents', 'public');
 
