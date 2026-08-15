@@ -246,7 +246,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $validated['email'])->first();
-        $user->password = $validated['password'];
+        $user->password = Hash::make($validated['password']);
         $user->save();
 
         DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
@@ -274,7 +274,7 @@ class AuthController extends Controller
             return apiError('كلمة المرور الحالية غير صحيحة', null, 422);
         }
 
-        $user->password = $validated['password'];
+        $user->password = Hash::make($validated['password']);
         $user->save();
 
         return apiSuccess('تم تغيير كلمة المرور بنجاح');

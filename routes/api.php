@@ -39,6 +39,9 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/provinces', [SettingController::class, 'provinces']);
+Route::get('document-types', [DocumentController::class, 'getTypes']);
+Route::get('contact-types', [ContactTypeController::class, 'index']);
+Route::get('contact-types/{contactType}', [ContactTypeController::class, 'show']);
 
 Route::get('portfolio/previous-works/{id}', [PreviousWorkController::class, 'show']);
 Route::get('portfolio/profiles/{profileId}/previous-works', [PreviousWorkController::class, 'index']);
@@ -54,10 +57,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('favorites', [FavoriteController::class, 'index']);
     Route::post('favorites/toggle', [FavoriteController::class, 'toggle']);
     Route::delete('favorites/{id}', [FavoriteController::class, 'destroy']);
-
-    Route::get('document-types', [DocumentController::class, 'getTypes']);
-    Route::get('contact-types', [ContactTypeController::class, 'index']);
-    Route::get('contact-types/{contactType}', [ContactTypeController::class, 'show']);
 
     Route::prefix('documents')->group(function () {
         Route::get('/', [DocumentController::class, 'index']);
