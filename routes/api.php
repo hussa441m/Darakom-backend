@@ -19,6 +19,7 @@ use App\Http\Controllers\Service\ServiceCategoryController;
 use App\Http\Controllers\Service\ArtisanServiceController;
 use App\Http\Controllers\Admin\DocumentTypeController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\ProviderRequestController;
 
 use App\Http\Controllers\Portfolio\PreviousWorkController;
 use App\Http\Controllers\Portfolio\PreviousWorkImageController;
@@ -126,6 +127,10 @@ Route::prefix('admin')
     ->group(function () {
 
         Route::get('/totals', [AdminController::class, 'totals']);
+
+        Route::get('provider-requests', [ProviderRequestController::class, 'index']);
+        Route::post('provider-requests/{provider}/approve', [ProviderRequestController::class, 'approve']);
+        Route::post('provider-requests/{provider}/reject', [ProviderRequestController::class, 'reject']);
 
         Route::get('ratings', [RatingController::class, 'index']);
         Route::get('ratings/{rating}', [RatingController::class, 'adminShow']);
