@@ -14,11 +14,11 @@ use App\Http\Controllers\Project\ProjectReportController;
 use App\Http\Controllers\Interaction\RatingController;
 use App\Http\Controllers\Interaction\ComplaintController;
 use App\Http\Controllers\Interaction\FavoriteController;
-use App\Http\Controllers\SettingController;
-
+use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\Service\ServiceCategoryController;
 use App\Http\Controllers\Service\ArtisanServiceController;
 use App\Http\Controllers\Admin\DocumentTypeController;
+use App\Http\Controllers\Admin\AdminController;
 
 use App\Http\Controllers\Portfolio\PreviousWorkController;
 use App\Http\Controllers\Portfolio\PreviousWorkImageController;
@@ -38,7 +38,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-Route::get('/provinces', [SettingController::class, 'provinces']);
+Route::get('/provinces', [ProvinceController::class, 'provinces']);
 Route::get('document-types', [DocumentController::class, 'getTypes']);
 Route::get('contact-types', [ContactTypeController::class, 'index']);
 Route::get('contact-types/{contactType}', [ContactTypeController::class, 'show']);
@@ -124,6 +124,8 @@ Route::middleware('auth:sanctum')->group(function(){
 Route::prefix('admin')
     ->middleware(['auth:sanctum', 'user.type:admin'])
     ->group(function () {
+
+        Route::get('/totals', [AdminController::class, 'totals']);
 
         Route::get('ratings', [RatingController::class, 'index']);
         Route::get('ratings/{rating}', [RatingController::class, 'adminShow']);
