@@ -14,11 +14,17 @@ class UserResource extends JsonResource
         return [
 
             'id' => $this->id,
-
+            
+            // 👇 تمت إضافة هذه الحقول لحل مشكلة الفرونت إند
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
             'name' => $this->full_name,
 
             'email' => $this->email,
             'phone' => $this->phone,
+            
+            // 👇 تمت إضافة حقل العنوان لحل مشكلة اختفائه بعد التحديث
+            'address' => $this->address,
 
             'type' => $this->type,
 
