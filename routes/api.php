@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ProjectTypeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ContactTypeController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -48,8 +49,6 @@ Route::get('portfolio/previous-works/{id}', [PreviousWorkController::class, 'sho
 Route::get('portfolio/profiles/{profileId}/previous-works', [PreviousWorkController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
-
 
     Route::get('profile', [AuthController::class, 'getProfile']);
     Route::put('profile/update', [AuthController::class, 'updateProfile']);
@@ -75,6 +74,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+    Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+
+  
+    Route::get('projects', [AdminProjectController::class, 'index']);
+    Route::get('projects/{project}', [AdminProjectController::class, 'show']);
+    Route::post('projects/{project}/approve', [AdminProjectController::class, 'approve']);
+    Route::post('projects/{project}/reject', [AdminProjectController::class, 'reject']);
+
+});
 
 
     Route::prefix('portfolio')->group(function () {
@@ -238,6 +246,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group(function () {
+    Route::get('dashboard', [ClientController::class, 'dashboard']);
     Route::get('projects',[ClientController::class, 'projects']);
     Route::get('projects/{project}',[ClientController::class, 'show']);
     Route::get('projects/{project}/offers',[ClientController::class, 'getOffers']);

@@ -9,33 +9,31 @@ use App\Models\Project;
 use App\Models\ProjectType;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class ProjectAndUserAndOfferSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        $now = now();
+
         $projectTypes = [
-            ['id' => 1, 'name' => 'تنفيذ '],
-            ['id' => 2, 'name' => 'تصميم معماري'],
-            ['id' => 3, 'name' => 'إشراف'],
-            ['id' => 4, 'name' => 'استشارة '],
-            ['id' => 5, 'name' => 'تسليم مشروع كامل'],
+            ['id' => 1, 'name' => 'تنفيذ', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'name' => 'تصميم معماري', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'name' => 'إشراف', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'name' => 'استشارة', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'name' => 'تسليم مشروع كامل', 'created_at' => $now, 'updated_at' => $now],
         ];
         ProjectType::insert($projectTypes);
         
         $roles = [
-            ['id' => 1, 'name' => 'مقاول'],
-            ['id' => 2, 'name' => 'مهندس معماري'],
-            ['id' => 3, 'name' => 'مهندس مدني'],
-            ['id' => 4, 'name' => 'مهندس مدني استشاري'],
-            ['id' => 5, 'name' => 'المكاتب الهندسية'],
-            ['id' => 6, 'name' => 'حرفي'],
+            ['id' => 1, 'name' => 'مقاول', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'name' => 'مهندس معماري', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'name' => 'مهندس مدني', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'name' => 'مهندس مدني استشاري', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'name' => 'المكاتب الهندسية', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 6, 'name' => 'حرفي', 'created_at' => $now, 'updated_at' => $now],
         ];
         Role::insert($roles);
 
@@ -61,6 +59,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 1,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 2,
@@ -71,6 +70,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 2,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 3,
@@ -81,6 +81,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 3,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 4,
@@ -91,6 +92,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 4,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 5,
@@ -101,6 +103,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 5,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 6,
@@ -111,6 +114,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'admin',
                 'status' => 'active',
                 'province_id' => 1,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 7,
@@ -121,6 +125,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'client',
                 'status' => 'active',
                 'province_id' => 2,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 8,
@@ -131,12 +136,11 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'type' => 'provider',
                 'status' => 'active',
                 'province_id' => 6,
+                'created_at' => $now, 'updated_at' => $now,
             ],
         ];
-
         User::insert($users);
 
-        // تم حذف حقل experience_start من المصفوفة أدناه
         $profiles = [
             [
                 'experience_years' => 25,
@@ -147,6 +151,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 1,
                 'role_id' => 1,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'experience_years' => 20,
@@ -157,6 +162,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 2,
                 'role_id' => 2,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'experience_years' => 15,
@@ -167,6 +173,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 3,
                 'role_id' => 3,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'experience_years' => 10,
@@ -177,6 +184,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 4,
                 'role_id' => 4,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'experience_years' => 5,
@@ -187,6 +195,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 5,
                 'role_id' => 5,
+                'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'experience_years' => 7,
@@ -197,9 +206,9 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'admin_comment' => null,
                 'user_id' => 8,
                 'role_id' => 6,
+                'created_at' => $now, 'updated_at' => $now,
             ],
         ];
-
         Profile::insert($profiles);
 
         $projects = [
@@ -230,8 +239,8 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_type_id' => 1,
                 'client_id' => 7,
                 'performed_by' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'id' => 2,
@@ -260,8 +269,8 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_type_id' => 2,
                 'client_id' => 7,
                 'performed_by' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'id' => 3,
@@ -290,8 +299,8 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_type_id' => 1,
                 'client_id' => 7,
                 'performed_by' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'id' => 4,
@@ -320,8 +329,8 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_type_id' => 5,
                 'client_id' => 7,
                 'performed_by' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'id' => 5,
@@ -350,11 +359,10 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_type_id' => 1,
                 'client_id' => 7,
                 'performed_by' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
         ];
-
         Project::insert($projects);
 
         $offers = [
@@ -366,7 +374,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'details' => 'تنفيذ كامل.',
                 'project_id' => 1,
                 'offered_by' => 1,
-                'status' => 'pending'
+                'status' => 'pending',
             ],
             [
                 'cost' => 120000,
@@ -377,7 +385,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'project_id' => 2,
                 'offered_by' => 3,
                 'status' => 'rejected',
-                'reject_reason' => 'السعر مرتفع'
+                'reject_reason' => 'السعر مرتفع',
             ],
             [
                 'cost' => 85000,
@@ -387,21 +395,19 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'details' => 'أفضل المواد.',
                 'project_id' => 3,
                 'offered_by' => 1,
-                'status' => 'pending'
+                'status' => 'pending',
             ],
         ];
-
         foreach ($offers as $offer) {
             Offer::create($offer);
         }
 
         $contactTypes = [
-            ['id' => 1, 'name' => 'phone'],
-            ['id' => 2, 'name' => 'whatsapp'],
-            ['id' => 3, 'name' => 'telegram'],
-            ['id' => 4, 'name' => 'email'],
+            ['id' => 1, 'name' => 'phone', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'name' => 'whatsapp', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'name' => 'telegram', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'name' => 'email', 'created_at' => $now, 'updated_at' => $now],
         ];
-
         ContactType::insert($contactTypes);
     }
 }
