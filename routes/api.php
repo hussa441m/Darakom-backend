@@ -20,7 +20,7 @@ use App\Http\Controllers\Service\ArtisanServiceController;
 use App\Http\Controllers\Admin\DocumentTypeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProviderRequestController;
-
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Portfolio\PreviousWorkController;
 use App\Http\Controllers\Portfolio\PreviousWorkImageController;
 use App\Http\Controllers\Admin\ProjectTypeController;
@@ -128,6 +128,9 @@ Route::prefix('admin')
 
         Route::get('/totals', [AdminController::class, 'totals']);
 
+        Route::get('/settings', [SettingController::class, 'index']);
+        Route::post('/settings', [SettingController::class, 'update']);
+        
         Route::get('provider-requests', [ProviderRequestController::class, 'index']);
         Route::post('provider-requests/{provider}/approve', [ProviderRequestController::class, 'approve']);
         Route::post('provider-requests/{provider}/reject', [ProviderRequestController::class, 'reject']);
