@@ -74,13 +74,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::middleware(['auth:sanctum', 'user.type:admin'])->group(function () {
+    Route::get('/admin/projects', [ProjectController::class, 'index']);
+    
 
-  
-    Route::get('projects', [AdminProjectController::class, 'index']);
-    Route::get('projects/{project}', [AdminProjectController::class, 'show']);
-    Route::post('projects/{project}/approve', [AdminProjectController::class, 'approve']);
-    Route::post('projects/{project}/reject', [AdminProjectController::class, 'reject']);
+    Route::get('/admin/projects/{project}', [AdminProjectController::class, 'show']);
+    Route::post('/admin/projects/{project}/approve', [AdminProjectController::class, 'approve']);
+    Route::post('/admin/projects/{project}/reject', [AdminProjectController::class, 'reject']);
 
 });
 
