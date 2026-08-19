@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,34 +9,24 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-     protected $fillable = [
-          'first_name',
-          'last_name',
-          'email',
-          'address',
-          'password',
-          'phone',
-          'type',       
-          'status',      
-          'avatar',
-          'fcm_token',
-          'is_notifications_enabled',
-           'province_id',
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'address',
+        'password',
+        'phone',
+        'type',      
+        'status',    
+        'avatar',
+        'fcm_token',
+        'is_notifications_enabled',
+        'province_id',
     ];
-   
 
-    /**
-     * Accessor لجلب الاسم الكامل للمستخدم مباشرة
-     */
-    public function getFullNameAttribute()
+    public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
     }
@@ -56,67 +45,71 @@ class User extends Authenticatable
     {
         return $this->hasMany(Contact::class);
     }
+
     public function projects()
     {
-       return $this->hasMany(Project::class, 'client_id');
+        return $this->hasMany(Project::class, 'client_id');
     }
 
     public function favorites()
     {
-       return $this->hasMany(Favorite::class);
-    }
-   
-    public function complaints()
-    {
-       return $this->hasMany(Complaint::class);
+        return $this->hasMany(Favorite::class);
     }
 
+    public function complaints()
+    {
+        return $this->hasMany(Complaint::class);
+    }
 
     public function complaintsAgainstMe()
     {
-      return $this->hasMany(Complaint::class,'against_user_id');
+        return $this->hasMany(Complaint::class, 'against_user_id');
     }
-     public function projectReports()
+
+    public function projectReports()
     {
-       return $this->hasMany(ProjectReport::class);
+        return $this->hasMany(ProjectReport::class);
     }
+
     public function province()
     { 
-       return $this->belongsTo(Province::class);
+        return $this->belongsTo(Province::class);
     }
 
-
-    // التقييمات التي حصل عليها المستخدم
     public function receivedRatings()
     {
         return $this->hasMany(Rating::class, 'to_user_id');
     }
-    // التقييمات التي كتبها
+
     public function givenRatings()
     {
-        return $this->hasMany(Rating::class,'user_id');
+        return $this->hasMany(Rating::class, 'user_id');
     }
 
+    // العروض التي تُلّقاها العميل على مشاريعه
     public function offers()
     {
-        return $this->hasManyThrough(Offer::class, Project::class, 'client_id', 'project_id');
-     }
+        return $this->hasManyThrough(
+            Offer::class,
+            Project::class,
+            'client_id',
+            'project_id',
+            'id',
+            'id'
+        );
+    }
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    // العروض التي قدمها المستخدم كـ Provider
+    public function submittedOffers()
+    {
+        return $this->hasMany(Offer::class, 'offered_by');
+    }
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
