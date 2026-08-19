@@ -24,7 +24,7 @@ class AuthController extends Controller
             'password'    => 'required|confirmed|min:6',
             'phone'       => 'required|string|max:20|unique:users,phone',
             'province_id' => 'required|exists:provinces,id',
-            'type'        => 'required|in:client,provider', 
+            'type'        => 'required|in:client,provider',
             'role_id'     => 'required_if:type,provider|nullable|exists:roles,id',
             'work_area'   => 'required_if:type,provider|nullable|string|max:100',
             'syndicate_number' => 'nullable|string|max:50',
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'first_name'  => $validated['first_name'],
             'last_name'   => $validated['last_name'],
             'email'       => $validated['email'],
-            'password'    => $validated['password'], 
+            'password'    => $validated['password'],
             'phone'       => $validated['phone'],
             'type'        => $validated['type'],
             'status'      => $status,
@@ -75,10 +75,18 @@ class AuthController extends Controller
             }
         }
 
-        $token = $user->createToken('mobile')->plainTextToken;
+        // 💡 التعديل الأول: توليد التوكن فقط إذا كان الحساب نشطاً
+        $token = null;
+        if ($user->status === 'active') {
+            $token = $user->createToken('mobile')->plainTextToken;
+        }
+
+        $message = $user->status === 'pending'
+            ? 'تم إنشاء الحساب بنجاح، بانتظار موافقة الإدارة'
+            : 'تم إنشاء الحساب بنجاح';
 
         return apiSuccess(
-            'تم إنشاء الحساب بنجاح',
+            $message,
             [
                 'type'  => $user->type,
                 'name'  => $user->full_name,
@@ -100,7 +108,7 @@ class AuthController extends Controller
             'تم جلب بيانات الحساب بنجاح',
             new UserResource($user)
         );
-    } 
+    }
 
   public function updateProfile(Request $request)
 {
@@ -186,8 +194,13 @@ class AuthController extends Controller
             return apiError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
         }
 
+        // 💡 التعديل الثاني: منع تسجيل الدخول للحسابات المعلقة
+        if ($user->status === 'pending') {
+            return apiError("حسابك قيد المراجعة من قبل الإدارة. يرجى الانتظار حتى يتم تفعيله.");
+        }
+
         if ($user->status === 'closed' || $user->status === 'locked') {
-            return apiError("الحساب غير مفعل");
+            return apiError("الحساب غير مفعل أو تم إغلاقه.");
         }
 
         $token = $user->createToken('mobile')->plainTextToken;

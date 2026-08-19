@@ -85,21 +85,30 @@ class ProviderController extends Controller
             ]
         );
     }
+
     public function publicTenders(Request $request)
     {
-               $profile = $request->user()->profile;
+        // تم إضافة تعريف الـ user للوصول إلى المحافظة
+        $user = $request->user();
+        $profile = $user->profile;
 
-               $projectTypeIds = $profile->role->projectTypes->pluck('id');
-               $tenders = Project::with(['projectType','province','client'])
-              ->where('visibility', 'public')
-              ->where('invitation_type', 'public')
-              ->whereIn('status', ['new', 'pending'])
-              ->whereNull('provider_profile_id')
-              ->latest()
-              ->get();
+        $projectTypeIds = $profile->role->projectTypes->pluck('id');
 
-           return apiSuccess("المناقصات العامة", $tenders);
+        $tenders = Project::with(['projectType','province','client'])
+            ->where('visibility', 'public')
+            ->where('invitation_type', 'public')
+            ->whereIn('status', ['new', 'pending'])
+            ->whereNull('provider_profile_id')
+            // 👇 التعديل الأول: الفلترة حسب المحافظة
+            ->where('province_id', $user->province_id)
+            // 👇 التعديل الثاني: الفلترة حسب تخصص المزود
+            ->whereIn('project_type_id', $projectTypeIds)
+            ->latest()
+            ->get();
+
+        return apiSuccess("المناقصات العامة", $tenders);
     }
+
     public function privateTenders(Request $request)
     {
              $profile = $request->user()->profile;
@@ -142,6 +151,9 @@ class ProviderController extends Controller
     ->where('invitation_type', 'public')
     ->whereIn('status', ['new', 'pending'])
     ->whereNull('provider_profile_id')
+    // يمكن أيضاً إضافة الفلترة هنا لمنع المزود من الدخول لرابط مناقصة غير مناسبة له عبر الـ ID
+    ->where('province_id', $user->province_id)
+    ->whereIn('project_type_id', $profile->role->projectTypes->pluck('id'))
     ->first();
 
     if ($publicTender) {
@@ -176,11 +188,11 @@ class ProviderController extends Controller
 }
 
 
- 
+
     public function declineInvitation($id)
    {
        $user = request()->user();
- 
+
        $profile = $user->profile;
 
         if (!$profile) {
@@ -202,7 +214,7 @@ class ProviderController extends Controller
 
         return apiSuccess("تم رفض الدعوة بنجاح",$invitation);
     }
- 
+
 
 public function projects(Request $request)
 {
