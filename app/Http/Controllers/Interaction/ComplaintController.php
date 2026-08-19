@@ -94,7 +94,10 @@ class ComplaintController extends Controller
                 'fromName' => $complaint->user->name ?? 'غير معروف',
                 'againstName' => $complaint->againstUser->name ?? 'غير معروف',
                 'projectTitle' => $complaint->project->title ?? 'غير محدد',
-                'date' => $complaint->created_at->format('Y/m/d'),
+                
+                // 👇 هنا تم حل المشكلة 👇
+                'date' => $complaint->created_at ? $complaint->created_at->format('Y/m/d') : 'تاريخ غير محدد',
+                
                 'status' => $complaint->status ?? 'pending',
                 'description' => $complaint->text, // في الداتابيز اسمها text وفي الفرونت description
                 'adminReply' => $complaint->admin_response, // في الداتابيز admin_response
@@ -103,6 +106,7 @@ class ComplaintController extends Controller
 
         return apiSuccess('جميع الشكاوى', $formattedComplaints);
     }
+	
 
     /**
      * Admin: take action on a complaint (update status, admin notes,
