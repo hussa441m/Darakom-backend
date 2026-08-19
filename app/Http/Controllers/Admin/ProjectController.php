@@ -37,8 +37,8 @@ class ProjectController extends Controller
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('project_code', 'like', "%{$search}%")
                   ->orWhereHas('client', function ($c) use ($search) {
-                      // تم التعديل ليطابق حقل name في جدول Users
-                      $c->where('name', 'like', "%{$search}%");
+                                            $c->where('first_name', 'like', "%{$search}%")
+                                                ->orWhere('last_name', 'like', "%{$search}%");
                   });
             });
         }
@@ -68,12 +68,12 @@ class ProjectController extends Controller
    
     public function approve(Project $project)
     {
-        if ($project->status === 'approved' || $project->status === 'open') {
+        if ($project->status === 'active') {
             return apiError('المشروع معتمد ومطروح مسبقاً.');
         }
 
         $project->update([
-            'status' => 'open', 
+            'status' => 'active',
         ]);
 
         return apiSuccess('تمت الموافقة على المشروع وطرحه بنجاح.', $project);

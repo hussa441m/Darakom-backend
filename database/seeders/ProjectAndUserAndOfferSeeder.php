@@ -19,24 +19,24 @@ class ProjectAndUserAndOfferSeeder extends Seeder
         $now = now();
 
         $projectTypes = [
-            ['id' => 1, 'name' => 'تنفيذ', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'name' => 'تصميم معماري', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'name' => 'إشراف', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'name' => 'استشارة', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 5, 'name' => 'تسليم مشروع كامل', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'name' => 'تنفيذ'],
+            ['id' => 2, 'name' => 'تصميم معماري'],
+            ['id' => 3, 'name' => 'إشراف'],
+            ['id' => 4, 'name' => 'استشارة'],
+            ['id' => 5, 'name' => 'تسليم مشروع كامل'],
         ];
-        ProjectType::insert($projectTypes);
+        ProjectType::insertOrIgnore($projectTypes);        
         
         $roles = [
-            ['id' => 1, 'name' => 'مقاول', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'name' => 'مهندس معماري', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'name' => 'مهندس مدني', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'name' => 'مهندس مدني استشاري', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 5, 'name' => 'المكاتب الهندسية', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 6, 'name' => 'حرفي', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'name' => 'مقاول'],
+            ['id' => 2, 'name' => 'مهندس معماري'],
+            ['id' => 3, 'name' => 'مهندس مدني'],
+            ['id' => 4, 'name' => 'مهندس مدني استشاري'],
+            ['id' => 5, 'name' => 'المكاتب الهندسية'],
+            ['id' => 6, 'name' => 'حرفي'],
         ];
-        Role::insert($roles);
-
+        Role::insertOrIgnore($roles);
+        
         $profileProjectTypes = [
             ['role_id' => 1, 'project_type_id' => 1],
             ['role_id' => 2, 'project_type_id' => 2],
@@ -139,7 +139,8 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'created_at' => $now, 'updated_at' => $now,
             ],
         ];
-        User::insert($users);
+        // استخدمنا إيجنور مشان ما يضرب تكرار إذا شغلته مرتين
+        User::insertOrIgnore($users);
 
         $profiles = [
             [
@@ -209,7 +210,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'created_at' => $now, 'updated_at' => $now,
             ],
         ];
-        Profile::insert($profiles);
+        Profile::insertOrIgnore($profiles);
 
         $projects = [
             [
@@ -363,7 +364,7 @@ class ProjectAndUserAndOfferSeeder extends Seeder
                 'updated_at' => $now,
             ],
         ];
-        Project::insert($projects);
+        Project::insertOrIgnore($projects);
 
         $offers = [
             [
@@ -399,15 +400,15 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             ],
         ];
         foreach ($offers as $offer) {
-            Offer::create($offer);
+            Offer::firstOrCreate($offer);
         }
 
         $contactTypes = [
-            ['id' => 1, 'name' => 'phone', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'name' => 'whatsapp', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'name' => 'telegram', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'name' => 'email', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'name' => 'phone'],
+            ['id' => 2, 'name' => 'whatsapp'],
+            ['id' => 3, 'name' => 'telegram'],
+            ['id' => 4, 'name' => 'email'],
         ];
-        ContactType::insert($contactTypes);
+        ContactType::insertOrIgnore($contactTypes);
     }
 }

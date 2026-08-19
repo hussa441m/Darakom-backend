@@ -258,6 +258,10 @@ Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(f
     Route::get('/steps', [StepController::class, 'adminIndex']);
     Route::get('/steps/{step}', [StepController::class, 'adminShow']);
     Route::delete('/steps/{step}', [StepController::class, 'adminDestroy']);
+    
+    // 👇 مسارات الشكاوى القديمة والجديدة 👇
     Route::get('/complaints', [ComplaintController::class, 'index']);
     Route::post('/complaints/{complaint}/action', [ComplaintController::class, 'takeAction']);
+    Route::post('/complaints/{id}/reply', [ComplaintController::class, 'replyToComplaint']);
+    Route::post('/complaints/{id}/close', [ComplaintController::class, 'closeComplaint']);
 });

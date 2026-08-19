@@ -30,6 +30,5 @@ class ProvinceSeeder extends Seeder
             ['id' => 13,'name' =>  'ديرالزور'],
             ['id' => 14,'name' => 'حمص'],
         ];
-        DB::table('provinces')->insert($provinces);
-    }
+DB::table('provinces')->insertOrIgnore($provinces);    }
 }

@@ -13,9 +13,8 @@ class ProjectReportSeeder extends Seeder
             [
                 'id' => 1,
                 'project_id' => 1,
-                'reported_by' => 7,
-                'reason' => 'معلومات غير صحيحة',
-                'details' => 'يوجد معلومات تحتاج للمراجعة.',
+                'user_id' => 7,
+                'description' => 'يوجد معلومات تحتاج للمراجعة.',
                 'status' => 'pending',
             ],
         ];

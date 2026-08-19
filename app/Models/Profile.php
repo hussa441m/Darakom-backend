@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Service;
 use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
@@ -50,6 +51,12 @@ class Profile extends Model
             'service_category_id'
         );
     }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'profile_service');
+    }
+
     public function offers()
     {
         return $this->hasMany(Offer::class, 'offered_by');

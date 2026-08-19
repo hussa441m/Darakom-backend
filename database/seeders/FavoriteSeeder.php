@@ -13,12 +13,12 @@ class FavoriteSeeder extends Seeder
             [
                 'id' => 1,
                 'user_id' => 7,
-                'profile_id' => 1,
+                'favorite_user_id' => 1,
             ],
             [
                 'id' => 2,
                 'user_id' => 7,
-                'profile_id' => 6,
+                'favorite_user_id' => 8,
             ],
         ];
 
