@@ -11,12 +11,15 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
 class ProjectAndUserAndOfferSeeder extends Seeder
 {
     public function run(): void
     {
         $now = now();
+        // إعداد Faker لدعم اللغة العربية
+        $faker = Faker::create('ar_SA'); 
 
         // 1. إعداد الأنواع والأدوار الأساسية
         ProjectType::insertOrIgnore([
@@ -35,12 +38,14 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             Role::findOrFail($roleId)->projectTypes()->syncWithoutDetaching($projectTypeId);
         }
 
-        // 2. إنشاء حساب الأدمن (مهم جداً للدخول)
+        // 2. إنشاء حساب الأدمن
         User::insertOrIgnore([
             'id' => 1,
             'first_name' => 'المشرف',
             'last_name' => 'الإداري',
             'email' => 'admin@test.com',
+            'phone' => '0991234567',
+            'address' => 'دمشق - مركز الإدارة',
             'password' => Hash::make('123456'),
             'type' => 'admin',
             'status' => 'active',
@@ -49,13 +54,15 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             'updated_at' => $now,
         ]);
 
-        // 3. إنشاء 15 عميل (بأسماء عربية)
+        // 3. إنشاء 15 عميل (ببيانات عشوائية حقيقية)
         $clients = [];
         for ($i = 1; $i <= 15; $i++) {
             $clients[] = User::create([
-                'first_name' => 'عميل ' . $i, 
-                'last_name' => 'تجريبي',
+                'first_name' => $faker->firstName, 
+                'last_name' => $faker->lastName,
                 'email' => 'client' . $i . '@test.com', 
+                'phone' => '09' . $faker->randomNumber(8, true), // توليد رقم يبدأ بـ 09
+                'address' => $faker->city . ' - ' . $faker->streetName, // مدينة وشارع عشوائي
                 'password' => Hash::make('123456'),
                 'type' => 'client', 
                 'status' => 'active', 
@@ -63,14 +70,16 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             ]);
         }
 
-        // 4. إنشاء 25 مزود خدمة (بأسماء عربية وحالات مختلفة)
+        // 4. إنشاء 25 مزود خدمة (ببيانات عشوائية حقيقية)
         $providers = [];
         $providerStatuses = ['active', 'pending', 'banned'];
         for ($i = 1; $i <= 25; $i++) {
             $user = User::create([
-                'first_name' => 'مزود ' . $i, 
-                'last_name' => 'محترف',
+                'first_name' => $faker->firstName, 
+                'last_name' => $faker->lastName,
                 'email' => 'provider' . $i . '@test.com', 
+                'phone' => '09' . $faker->randomNumber(8, true),
+                'address' => $faker->city . ' - ' . $faker->streetAddress,
                 'password' => Hash::make('123456'),
                 'type' => 'provider', 
                 'status' => $providerStatuses[array_rand($providerStatuses)],
@@ -80,14 +89,14 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             $providers[] = Profile::create([
                 'experience_years' => rand(1, 25), 
                 'work_area' => 'محافظة ' . rand(1, 6),
-                'bio' => 'هذا وصف تعريفي لمزود الخدمة رقم ' . $i . ' يوضح خبراته لأغراض الاختبار.',
-                'syndicate_number' => 'SY-' . str_pad((string) $i, 4, '0', STR_PAD_LEFT),
+                'bio' => $faker->realText(100), // نص عربي عشوائي للسيرة الذاتية
+                'syndicate_number' => 'SY-' . $faker->unique()->randomNumber(4, true),
                 'user_id' => $user->id, 
                 'role_id' => rand(1, 6),
             ]);
         }
 
-        // 5. إنشاء 50 مشروع متنوع (بأسماء وتفاصيل عربية)
+        // 5. إنشاء 50 مشروع متنوع (بنصوص عشوائية)
         $projects = [];
         $workTypes = ['construction', 'finishing'];
         $tenderTypes = ['urgent', 'normal'];
@@ -99,15 +108,15 @@ class ProjectAndUserAndOfferSeeder extends Seeder
             $visibility = $visibilities[array_rand($visibilities)];
             $projects[] = Project::create([
                 'project_code' => 'PRJ-' . str_pad((string) $i, 4, '0', STR_PAD_LEFT),
-                'title' => 'مشروع بناء أو تشطيب ' . $i,
+                'title' => 'مشروع ' . $faker->catchPhrase, // عنوان عشوائي
                 'work_type' => $workTypes[array_rand($workTypes)],
                 'tender_type' => $tenderTypes[array_rand($tenderTypes)],
                 'start_date' => $now->copy()->addDays($i),
                 'end_date' => $now->copy()->addDays($i + rand(30, 180)),
                 'area' => rand(50, 2500), 
-                'location_details' => 'موقع العمل ' . $i,
-                'building_no' => (string) rand(1, 999),
-                'description' => 'هذا وصف تفصيلي باللغة العربية للمشروع رقم ' . $i . ' تم توليده آلياً لاختبارات المناقشة.',
+                'location_details' => $faker->address, // عنوان تفصيلي عشوائي
+                'building_no' => (string) $faker->buildingNumber,
+                'description' => $faker->realText(200), // وصف مشروع تفصيلي
                 'visibility' => $visibility, 
                 'invitation_type' => $visibility,
                 'tender_duration' => rand(1, 30), 
@@ -128,19 +137,18 @@ class ProjectAndUserAndOfferSeeder extends Seeder
         $offerStatuses = ['pending', 'accepted', 'rejected'];
         $durationUnits = ['day', 'month', 'year'];
         foreach ($projects as $project) {
-            // نختار من 2 لـ 5 مزودين عشوائيين لكل مشروع
             foreach (collect($providers)->random(rand(2, 5)) as $provider) {
                 $status = $offerStatuses[array_rand($offerStatuses)];
                 Offer::create([
                     'cost' => rand(1000000, 50000000), 
                     'duration' => rand(1, 100),
                     'duration_unit' => $durationUnits[array_rand($durationUnits)],
-                    'provider_comment' => 'عرض سعر ممتاز شامل التنفيذ والمواد والمعدات اللازمة.',
-                    'details' => 'هذه تفاصيل عرض السعر التجريبي لاختبار واجهات النظام.',
+                    'provider_comment' => $faker->realText(50), // تعليق عشوائي من المزود
+                    'details' => $faker->realText(100), // تفاصيل عرض السعر
                     'project_id' => $project->id, 
                     'offered_by' => $provider->id, 
                     'status' => $status,
-                    'reject_reason' => $status === 'rejected' ? 'تم الرفض بسبب ارتفاع التكلفة المادية.' : null,
+                    'reject_reason' => $status === 'rejected' ? $faker->realText(40) : null,
                     'start_date' => $now->copy()->addDays(rand(1, 30)),
                 ]);
             }
