@@ -74,29 +74,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // 👇 تم تصحيح الخطأ هنا بتغيير 'admin' إلى 'user.type:admin' 👇
+    Route::middleware(['auth:sanctum', 'user.type:admin'])->prefix('admin')->group(function () {
 
-  
-    Route::get('projects', [AdminProjectController::class, 'index']);
-    Route::get('projects/{project}', [AdminProjectController::class, 'show']);
-    Route::post('projects/{project}/approve', [AdminProjectController::class, 'approve']);
-    Route::post('projects/{project}/reject', [AdminProjectController::class, 'reject']);
+        Route::get('projects', [AdminProjectController::class, 'index']);
+        Route::get('projects/{project}', [AdminProjectController::class, 'show']);
+        Route::post('projects/{project}/approve', [AdminProjectController::class, 'approve']);
+        Route::post('projects/{project}/reject', [AdminProjectController::class, 'reject']);
 
-});
+    });
 
 
     Route::prefix('portfolio')->group(function () {
-
-
 
         Route::get('previous-works', [PreviousWorkController::class, 'index']);
         Route::post('previous-works', [PreviousWorkController::class, 'store']);
         Route::put('previous-works/{id}', [PreviousWorkController::class, 'update']);
         Route::delete('previous-works/{id}', [PreviousWorkController::class, 'destroy']);
-
-
-
-
 
         Route::post('previous-works/{previousWorkId}/images', [PreviousWorkImageController::class, 'store']);
         Route::delete('images/{imageId}', [PreviousWorkImageController::class, 'destroy']);
@@ -104,19 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 
-
-
-
     Route::get('service-categories', [ServiceCategoryController::class, 'index']);
     Route::get('service-categories/{category}', [ArtisanServiceController::class, 'getProvidersByCategory']);
     Route::post('provider/service-category/toggle', [ArtisanServiceController::class, 'toggleProviderService']);
-
-
-
-
-
-
-
 
 });
 
@@ -138,7 +122,7 @@ Route::prefix('admin')
 
         Route::get('/settings', [SettingController::class, 'index']);
         Route::post('/settings', [SettingController::class, 'update']);
-        
+
         Route::get('provider-requests', [ProviderRequestController::class, 'index']);
         Route::post('provider-requests/{provider}/approve', [ProviderRequestController::class, 'approve']);
         Route::post('provider-requests/{provider}/reject', [ProviderRequestController::class, 'reject']);
@@ -155,19 +139,11 @@ Route::prefix('admin')
         Route::put('document-types/{documentType}', [DocumentTypeController::class, 'update']);
         Route::delete('document-types/{documentType}', [DocumentTypeController::class, 'destroy']);
 
-
-
-
-
-
         Route::get('project-types', [ProjectTypeController::class, 'index']);
         Route::post('project-types', [ProjectTypeController::class, 'store']);
         Route::get('project-types/{projectType}', [ProjectTypeController::class, 'show']);
         Route::put('project-types/{projectType}', [ProjectTypeController::class, 'update']);
         Route::delete('project-types/{projectType}', [ProjectTypeController::class, 'destroy']);
-
-
-
 
         Route::get('roles', [RoleController::class, 'index']);
         Route::post('roles', [RoleController::class, 'store']);
@@ -175,24 +151,14 @@ Route::prefix('admin')
         Route::put('roles/{role}', [RoleController::class, 'update']);
         Route::delete('roles/{role}', [RoleController::class, 'destroy']);
 
-
-
-
-
         Route::post('contact-types', [ContactTypeController::class, 'store']);
         Route::put('contact-types/{contactType}', [ContactTypeController::class, 'update']);
         Route::delete('contact-types/{contactType}', [ContactTypeController::class, 'destroy']);
-
-
-
 
         Route::get('profiles', [ProfileController::class, 'index']);
         Route::get('profiles/{profile}', [ProfileController::class, 'show']);
         Route::put('profiles/{profile}', [ProfileController::class, 'update']);
         Route::delete('profiles/{profile}', [ProfileController::class, 'destroy']);
-
-
-
 
         Route::post('service-categories', [ServiceCategoryController::class, 'store']);
         Route::put('service-categories/{id}', [ServiceCategoryController::class, 'update']);
@@ -201,9 +167,6 @@ Route::prefix('admin')
     });
 
 
-
-
-    
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/provider/dashboard', [ProviderController::class, 'dashboard']);
@@ -242,7 +205,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/provider/projects/{project}/reports/{report}',[ProjectReportController::class, 'show']);
     Route::put('provider/reports/{report}',[ProjectReportController::class, 'update']);
     Route::delete('provider/reports/{report}', [ProjectReportController::class, 'destroy']);
-    
+
     Route::get('provider/ratings',[RatingController::class, 'providerRatings']);
     Route::get('provider/ratings/{rating}',[RatingController::class, 'providerShow']);
 
@@ -253,7 +216,7 @@ Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group
     Route::get('projects',[ClientController::class, 'projects']);
     Route::get('projects/{project}',[ClientController::class, 'show']);
     Route::get('projects/{project}/offers',[ClientController::class, 'getOffers']);
-    
+
     Route::get('/offers/public', [OfferController::class, 'publicOffers']);
     Route::get('/offers/private', [OfferController::class, 'privateOffers']);
     Route::get('/projects/{project}/offers/{offer}', [OfferController::class, 'show']);
@@ -271,7 +234,7 @@ Route::middleware(['auth:sanctum', 'user.type:client'])->prefix('client')->group
 
     Route::post('projects/{project}/invitations',[ProjectInvitationController::class, 'store']);
     Route::delete('invitations/{invitation}',[ProjectInvitationController::class, 'destroy']);
-    
+
     Route::get( 'projects/{project}/reports',[ProjectReportController::class, 'clientIndex'] );
     Route::get('projects/{project}/reports/{report}',[ProjectReportController::class, 'clientShow']);
 
