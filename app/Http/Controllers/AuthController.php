@@ -27,6 +27,7 @@ class AuthController extends Controller
             'type'        => 'required|in:client,provider', 
             'role_id'     => 'required_if:type,provider|nullable|exists:roles,id',
             'work_area'   => 'required_if:type,provider|nullable|string|max:100',
+            'syndicate_number' => 'nullable|string|max:50',
             'bio'         => 'nullable|string|max:1000', // اختياري للجميع
 
             'documents'               => 'nullable|array',
@@ -53,6 +54,7 @@ class AuthController extends Controller
             'bio'       => $validated['bio'] ?? null,
             'work_area' => $user->type === 'provider' ? ($validated['work_area'] ?? null) : null,
             'role_id'   => $user->type === 'provider' ? ($validated['role_id'] ?? null) : null,
+            'syndicate_number' => $user->type === 'provider' ? ($validated['syndicate_number'] ?? null) : null,
         ]);
 
         // إضافة المستندات إن وجدت لمزودي الخدمات
@@ -115,9 +117,10 @@ class AuthController extends Controller
     ];
 
     if ($user->type === 'provider') {
-        $rules['role_id']          = 'required|exists:roles,id';
+        $rules['role_id']          = 'sometimes|exists:roles,id';
         $rules['work_area']        = 'required|string|max:100';
         $rules['syndicate_number'] = 'nullable|string|max:50';
+        $rules['experience_years'] = 'nullable|integer|min:0';
     }
 
     $validated = $request->validate($rules);
@@ -142,6 +145,7 @@ class AuthController extends Controller
         $profileData['role_id']          = $validated['role_id'] ?? $user->profile?->role_id;
         $profileData['work_area']        = $validated['work_area'] ?? $user->profile?->work_area;
         $profileData['syndicate_number'] = $validated['syndicate_number'] ?? $user->profile?->syndicate_number;
+        $profileData['experience_years'] = $validated['experience_years'] ?? $user->profile?->experience_years;
     }
 
     if (!empty($profileData)) {
