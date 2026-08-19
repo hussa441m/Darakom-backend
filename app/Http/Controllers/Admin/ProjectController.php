@@ -15,7 +15,9 @@ class ProjectController extends Controller
             'projectType',
             'province',
             'client',
-            'providerProfile.user'
+            'providerProfile.user',
+            
+            'documents'
         ]);
 
         // الفلترة حسب حالة التقييم/المراجعة
