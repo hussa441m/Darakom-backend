@@ -82,6 +82,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('projects/{project}/approve', [AdminProjectController::class, 'approve']);
         Route::post('projects/{project}/reject', [AdminProjectController::class, 'reject']);
 
+        // مسارات إدارة العروض للأدمن
+        Route::get('offers', [\App\Http\Controllers\Admin\OfferController::class, 'index']);
+        Route::post('offers/{offer}/approve', [\App\Http\Controllers\Admin\OfferController::class, 'approve']);
+        Route::post('offers/{offer}/reject', [\App\Http\Controllers\Admin\OfferController::class, 'reject']);
+
     });
 
 
