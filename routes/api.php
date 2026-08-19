@@ -41,6 +41,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/provinces', [ProvinceController::class, 'provinces']);
+Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index']);
 Route::get('document-types', [DocumentController::class, 'getTypes']);
 Route::get('contact-types', [ContactTypeController::class, 'index']);
 Route::get('contact-types/{contactType}', [ContactTypeController::class, 'show']);
