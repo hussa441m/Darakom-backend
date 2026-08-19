@@ -12,25 +12,25 @@ class ProfileResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->user?->full_name,
+            'name' => $this->user?->full_name ?? trim(($this->user?->first_name ?? '') . ' ' . ($this->user?->last_name ?? '')),
             'role' => $this->role?->name,
             'work_area' => $this->work_area,
             'bio' => $this->bio,
             
-            // حساب سنوات الخبرة بأمان
             'experience' => $this->experience_start
                 ? Carbon::parse($this->experience_start)->diffInYears(now())
                 : ($this->experience_years ?? 0),
 
             'experience_years' => $this->experience_years,
             'syndicate_number' => $this->syndicate_number,
-            'logo' => $this->logo,
-           'qualifications' => $this->whenLoaded('qualifications', function () {
+            'logo' => $this->logo ? asset('storage/' . $this->logo) : null,
+
+            'qualifications' => $this->whenLoaded('qualifications', function () {
                 return $this->qualifications->map(function ($qualification) {
                     return [
                         'id' => $qualification->id,
                         'name' => $qualification->name,
-                        'image' => asset('storage/' . $qualification->image),
+                        'image' => $qualification->image ? asset('storage/' . $qualification->image) : null,
                     ];
                 });
             }),
@@ -39,6 +39,8 @@ class ProfileResource extends JsonResource
                 return $this->documents->map(function ($doc) {
                     return [
                         'id' => $doc->id,
+                        'description' => $doc->description,
+                        'type' => $doc->documentType?->name,
                         'url' => asset('storage/' . $doc->path),
                     ];
                 });

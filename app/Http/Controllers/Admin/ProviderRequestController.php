@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -41,7 +42,7 @@ class ProviderRequestController extends Controller
 
         $data = [
             'pending_count' => User::where('type', 'provider')->where('status', 'pending')->count(),
-            'providers' => $query->paginate(15),
+            'providers' => UserResource::collection($query->paginate(15)),
         ];
 
         return apiSuccess('تم جلب طلبات مزودي الخدمة بنجاح', $data);
@@ -61,7 +62,7 @@ class ProviderRequestController extends Controller
             $provider->profile->save();
         }
 
-        return apiSuccess('تم قبول الطلب وتفعيل حساب مزود الخدمة بنجاح', $provider->load('profile'));
+        return apiSuccess('تم قبول الطلب وتفعيل حساب مزود الخدمة بنجاح', new UserResource($provider->load('profile')));
     }
 
     public function reject(Request $request, User $provider)
@@ -86,6 +87,6 @@ class ProviderRequestController extends Controller
             $provider->profile->save();
         }
 
-        return apiSuccess('تم رفض الطلب بنجاح', $provider->load('profile'));
+        return apiSuccess('تم رفض الطلب بنجاح', new UserResource($provider->load('profile')));
     }
 }
